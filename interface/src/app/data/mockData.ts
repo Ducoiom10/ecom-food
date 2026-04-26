@@ -1,0 +1,288 @@
+// ===== MOCK DATA FOR BA ANH EM F&B ECOSYSTEM =====
+
+export const MENU_ITEMS = [
+  {
+    id: "1",
+    name: "Mì trộn đặc biệt",
+    price: 45000,
+    category: "noodles",
+    image: "https://images.unsplash.com/photo-1658706117692-f80a370adde3?w=400&q=80",
+    rating: 4.8,
+    sold: 523,
+    distance: "0.8km",
+    description: "Mì trộn với sốt đặc biệt của nhà, topping trứng lòng đào, thịt bò slice",
+    calories: 420,
+    isNew: false,
+    isBestSeller: true,
+    toppings: [
+      { id: "t1", name: "Trứng lòng đào", price: 8000 },
+      { id: "t2", name: "Thịt bò thêm", price: 15000 },
+      { id: "t3", name: "Cải thêm", price: 3000 },
+      { id: "t4", name: "Sa tế", price: 2000 },
+    ],
+    sizes: [
+      { id: "s1", name: "S", price: 0 },
+      { id: "s2", name: "M", price: 5000 },
+      { id: "s3", name: "L", price: 10000 },
+    ],
+  },
+  {
+    id: "2",
+    name: "Trà sữa trân châu đen",
+    price: 35000,
+    category: "drinks",
+    image: "https://images.unsplash.com/photo-1572932759882-bb34c848d1b3?w=400&q=80",
+    rating: 4.9,
+    sold: 1200,
+    distance: "0.8km",
+    description: "Trà sữa pha chế theo công thức độc quyền, trân châu đen dai giòn",
+    calories: 280,
+    isNew: false,
+    isBestSeller: true,
+    toppings: [
+      { id: "t5", name: "Thạch cà phê", price: 5000 },
+      { id: "t6", name: "Pudding trứng", price: 7000 },
+      { id: "t7", name: "Kem cheese", price: 10000 },
+    ],
+    sizes: [
+      { id: "s1", name: "M", price: 0 },
+      { id: "s2", name: "L", price: 5000 },
+      { id: "s3", name: "XL", price: 10000 },
+    ],
+  },
+  {
+    id: "3",
+    name: "Bánh mì đặc biệt",
+    price: 30000,
+    category: "snacks",
+    image: "https://images.unsplash.com/photo-1599719455360-ff0be7c4dd06?w=400&q=80",
+    rating: 4.7,
+    sold: 890,
+    distance: "0.8km",
+    description: "Bánh mì giòn với nhân pate, chả lụa, dưa leo tươi và rau mùi",
+    calories: 380,
+    isNew: true,
+    isBestSeller: false,
+    toppings: [
+      { id: "t8", name: "Trứng ốp la", price: 6000 },
+      { id: "t9", name: "Chả lụa thêm", price: 8000 },
+      { id: "t10", name: "Pate đặc biệt", price: 5000 },
+    ],
+    sizes: [
+      { id: "s1", name: "Nhỏ", price: 0 },
+      { id: "s2", name: "Lớn", price: 8000 },
+    ],
+  },
+  {
+    id: "4",
+    name: "Gà rán giòn cay",
+    price: 55000,
+    category: "snacks",
+    image: "https://images.unsplash.com/photo-1765360024320-b2ab819c6f75?w=400&q=80",
+    rating: 4.6,
+    sold: 445,
+    distance: "0.8km",
+    description: "Gà rán tẩm ướp cay đặc biệt, giòn ngoài mềm trong",
+    calories: 560,
+    isNew: true,
+    isBestSeller: false,
+    toppings: [
+      { id: "t11", name: "Sốt mayo", price: 3000 },
+      { id: "t12", name: "Sốt cay đặc biệt", price: 4000 },
+    ],
+    sizes: [
+      { id: "s1", name: "2 miếng", price: 0 },
+      { id: "s2", name: "4 miếng", price: 25000 },
+      { id: "s3", name: "6 miếng", price: 45000 },
+    ],
+  },
+  {
+    id: "5",
+    name: "Sinh tố xoài nhiệt đới",
+    price: 40000,
+    category: "drinks",
+    image: "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?w=400&q=80",
+    rating: 4.7,
+    sold: 320,
+    distance: "0.8km",
+    description: "Sinh tố xoài Cát Hòa Lộc tươi, không pha thêm nước",
+    calories: 210,
+    isNew: false,
+    isBestSeller: false,
+    toppings: [
+      { id: "t13", name: "Thêm xoài", price: 10000 },
+      { id: "t14", name: "Kem tươi", price: 8000 },
+    ],
+    sizes: [
+      { id: "s1", name: "M", price: 0 },
+      { id: "s2", name: "L", price: 8000 },
+    ],
+  },
+  {
+    id: "6",
+    name: "Phở bò đặc biệt",
+    price: 65000,
+    category: "noodles",
+    image: "https://images.unsplash.com/photo-1677011454858-8ecb6d4e6ce0?w=400&q=80",
+    rating: 4.9,
+    sold: 678,
+    distance: "0.8km",
+    description: "Phở bò nấu 12 tiếng với xương ống, thịt bò tái chín đặc biệt",
+    calories: 480,
+    isNew: false,
+    isBestSeller: true,
+    toppings: [
+      { id: "t15", name: "Tái thêm", price: 15000 },
+      { id: "t16", name: "Gân giòn", price: 12000 },
+      { id: "t17", name: "Trứng thả", price: 8000 },
+    ],
+    sizes: [
+      { id: "s1", name: "Nhỏ", price: 0 },
+      { id: "s2", name: "Vừa", price: 8000 },
+      { id: "s3", name: "Lớn", price: 15000 },
+    ],
+  },
+  {
+    id: "7",
+    name: "Cơm tấm sườn bì chả",
+    price: 55000,
+    category: "rice",
+    image: "https://images.unsplash.com/photo-1588703314135-01e9e4205802?w=400&q=80",
+    rating: 4.8,
+    sold: 412,
+    distance: "0.8km",
+    description: "Cơm tấm sườn nướng mật ong, bì sợi và chả trứng truyền thống",
+    calories: 620,
+    isNew: false,
+    isBestSeller: true,
+    toppings: [
+      { id: "t18", name: "Sườn thêm", price: 20000 },
+      { id: "t19", name: "Trứng ốp", price: 6000 },
+      { id: "t20", name: "Canh chua", price: 10000 },
+    ],
+    sizes: [
+      { id: "s1", name: "Thường", price: 0 },
+      { id: "s2", name: "Đầy đặn", price: 15000 },
+    ],
+  },
+  {
+    id: "8",
+    name: "Chả giò giòn",
+    price: 25000,
+    category: "snacks",
+    image: "https://images.unsplash.com/photo-1776178393305-be4c1097fae5?w=400&q=80",
+    rating: 4.5,
+    sold: 289,
+    distance: "0.8km",
+    description: "Chả giò chiên giòn nhân tôm thịt, rau củ tươi ngon",
+    calories: 320,
+    isNew: false,
+    isBestSeller: false,
+    toppings: [
+      { id: "t21", name: "Nước mắm chua ngọt", price: 2000 },
+      { id: "t22", name: "Tương ớt", price: 2000 },
+    ],
+    sizes: [
+      { id: "s1", name: "3 cái", price: 0 },
+      { id: "s2", name: "6 cái", price: 20000 },
+    ],
+  },
+];
+
+export const COMBOS = [
+  {
+    id: "c1",
+    name: "Combo Văn phòng A",
+    description: "Mì trộn + Trà sữa M",
+    originalPrice: 80000,
+    comboPrice: 65000,
+    savings: 15000,
+    items: ["1", "2"],
+    image: "https://images.unsplash.com/photo-1658706117692-f80a370adde3?w=300&q=80",
+  },
+  {
+    id: "c2",
+    name: "Combo Bựa B",
+    description: "Gà rán 4 miếng + Trà sữa L",
+    originalPrice: 115000,
+    comboPrice: 90000,
+    savings: 25000,
+    items: ["4", "2"],
+    image: "https://images.unsplash.com/photo-1765360024320-b2ab819c6f75?w=300&q=80",
+  },
+  {
+    id: "c3",
+    name: "Combo Phở Deluxe",
+    description: "Phở bò + Sinh tố xoài",
+    originalPrice: 105000,
+    comboPrice: 85000,
+    savings: 20000,
+    items: ["6", "5"],
+    image: "https://images.unsplash.com/photo-1677011454858-8ecb6d4e6ce0?w=300&q=80",
+  },
+];
+
+export const REVIEWS = [
+  { id: "r1", user: "Minh Tuấn", avatar: "MT", rating: 5, comment: "Mì trộn ngon cực! Sốt đặc biệt lắm, ăn là nghiện luôn 🔥", item: "Mì trộn đặc biệt", time: "2 giờ trước", img: "https://images.unsplash.com/photo-1658706117692-f80a370adde3?w=100&q=80" },
+  { id: "r2", user: "Lan Anh", avatar: "LA", rating: 5, comment: "Trà sữa nhà này trân châu dai giòn, không ngọt quá. Thích!", item: "Trà sữa trân châu", time: "5 giờ trước", img: "https://images.unsplash.com/photo-1572932759882-bb34c848d1b3?w=100&q=80" },
+  { id: "r3", user: "Hoàng Nam", avatar: "HN", rating: 5, comment: "Giao hàng nhanh, đồ ăn còn nóng hổi. Ship có túi giữ nhiệt xịn 👍", item: "Phở bò đặc biệt", time: "1 ngày trước", img: "https://images.unsplash.com/photo-1677011454858-8ecb6d4e6ce0?w=100&q=80" },
+  { id: "r4", user: "Thu Hà", avatar: "TH", rating: 5, comment: "Combo văn phòng siêu hợp lý, order mỗi ngày cho cả team 😍", item: "Combo Văn phòng A", time: "3 ngày trước", img: "https://images.unsplash.com/photo-1588703314135-01e9e4205802?w=100&q=80" },
+];
+
+export const KDS_ORDERS = [
+  { id: "ORD-001", table: "Bàn 5", items: [{ name: "Phở bò đặc biệt", qty: 2, note: "Ít hành", toppings: ["Tái thêm"] }, { name: "Chả giò giòn", qty: 1, note: "", toppings: [] }], status: "todo", time: "10:23", elapsed: 8, priority: "normal" },
+  { id: "ORD-002", table: "Ship - Nguyễn V.A", items: [{ name: "Mì trộn đặc biệt", qty: 3, note: "Bỏ hành", toppings: ["Trứng lòng đào"] }, { name: "Trà sữa trân châu đen", qty: 3, note: "Ít đường", toppings: [] }], status: "todo", time: "10:25", elapsed: 6, priority: "high" },
+  { id: "ORD-003", table: "Bàn 2", items: [{ name: "Cơm tấm sườn bì chả", qty: 1, note: "", toppings: ["Canh chua"] }, { name: "Sinh tố xoài nhiệt đới", qty: 1, note: "", toppings: [] }], status: "cooking", time: "10:18", elapsed: 13, priority: "normal" },
+  { id: "ORD-004", table: "Ship - Trần T.B", items: [{ name: "Bánh mì đặc biệt", qty: 2, note: "Thêm pate", toppings: ["Trứng ốp la"] }], status: "cooking", time: "10:20", elapsed: 11, priority: "high" },
+  { id: "ORD-005", table: "Bàn 8", items: [{ name: "Gà rán giòn cay", qty: 2, note: "", toppings: ["Sốt cay đặc biệt"] }], status: "ready", time: "10:15", elapsed: 16, priority: "normal" },
+  { id: "ORD-006", table: "Ship - Lê V.C", items: [{ name: "Phở bò đặc biệt", qty: 1, note: "Không hành", toppings: [] }], status: "ready", time: "10:17", elapsed: 14, priority: "normal" },
+];
+
+export const HISTORICAL_SALES = [
+  { hour: "06:00", miBow: 5, pho: 8, banhMi: 12, drinks: 15, total: 40 },
+  { hour: "07:00", miBow: 12, pho: 20, banhMi: 25, drinks: 30, total: 87 },
+  { hour: "08:00", miBow: 18, pho: 30, banhMi: 20, drinks: 45, total: 113 },
+  { hour: "09:00", miBow: 10, pho: 15, banhMi: 12, drinks: 25, total: 62 },
+  { hour: "10:00", miBow: 8, pho: 10, banhMi: 8, drinks: 20, total: 46 },
+  { hour: "11:00", miBow: 45, pho: 60, banhMi: 35, drinks: 80, total: 220 },
+  { hour: "12:00", miBow: 80, pho: 100, banhMi: 60, drinks: 120, total: 360 },
+  { hour: "13:00", miBow: 55, pho: 70, banhMi: 40, drinks: 85, total: 250 },
+  { hour: "14:00", miBow: 15, pho: 20, banhMi: 10, drinks: 30, total: 75 },
+  { hour: "15:00", miBow: 12, pho: 8, banhMi: 15, drinks: 40, total: 75 },
+  { hour: "16:00", miBow: 10, pho: 5, banhMi: 20, drinks: 50, total: 85 },
+  { hour: "17:00", miBow: 20, pho: 15, banhMi: 15, drinks: 35, total: 85 },
+  { hour: "18:00", miBow: 50, pho: 65, banhMi: 30, drinks: 70, total: 215 },
+  { hour: "19:00", miBow: 70, pho: 80, banhMi: 45, drinks: 90, total: 285 },
+  { hour: "20:00", miBow: 40, pho: 50, banhMi: 25, drinks: 60, total: 175 },
+  { hour: "21:00", miBow: 15, pho: 20, banhMi: 10, drinks: 25, total: 70 },
+];
+
+export const DISPATCH_ORDERS = [
+  { id: "ORD-021", customer: "Nguyễn V. Anh", address: "123 Nguyễn Huệ, Q1", items: 3, total: 185000, status: "picking", shipper: "Trần Văn B", shipperPhone: "0901234567", eta: "12 phút", lat: 10.776, lng: 106.701 },
+  { id: "ORD-022", customer: "Lê Thị Hoa", address: "45 Lê Lợi, Q1", items: 2, total: 95000, status: "delivering", shipper: "Phạm Văn C", shipperPhone: "0912345678", eta: "5 phút", lat: 10.771, lng: 106.695 },
+  { id: "ORD-023", customer: "Phạm T. Mai", address: "67 Đinh Tiên Hoàng, Q3", items: 5, total: 320000, status: "ready", shipper: null, eta: "—", lat: 10.780, lng: 106.698 },
+  { id: "ORD-024", customer: "Trần V. Bình", address: "89 Võ Văn Tần, Q3", items: 2, total: 130000, status: "delivering", shipper: "Nguyễn Văn D", shipperPhone: "0923456789", eta: "8 phút", lat: 10.768, lng: 106.688 },
+  { id: "ORD-025", customer: "Hoàng V. Minh", address: "12 Nam Kỳ Khởi Nghĩa, Q1", items: 1, total: 65000, status: "picking", shipper: "Lê Văn E", shipperPhone: "0934567890", eta: "15 phút", lat: 10.774, lng: 106.692 },
+];
+
+export const BRANCHES = [
+  { id: "b1", name: "Chi nhánh Quận 1", address: "123 Nguyễn Huệ, Q1", status: "open", revenue: 15600000, orders: 234, rating: 4.8 },
+  { id: "b2", name: "Chi nhánh Quận 3", address: "45 Võ Văn Tần, Q3", status: "open", revenue: 12300000, orders: 189, rating: 4.7 },
+  { id: "b3", name: "Chi nhánh Bình Thạnh", address: "78 Nơ Trang Long, BT", status: "open", revenue: 9800000, orders: 156, rating: 4.6 },
+  { id: "b4", name: "Chi nhánh Gò Vấp", address: "34 Quang Trung, GV", status: "closed", revenue: 0, orders: 0, rating: 4.5 },
+];
+
+export const INVENTORY_ITEMS = [
+  { id: "inv1", name: "Mì trứng", unit: "kg", current: 15, safety: 20, max: 50, status: "low" },
+  { id: "inv2", name: "Thịt bò lát", unit: "kg", current: 8, safety: 10, max: 30, status: "critical" },
+  { id: "inv3", name: "Trân châu đen", unit: "kg", current: 25, safety: 15, max: 40, status: "ok" },
+  { id: "inv4", name: "Sườn heo", unit: "kg", current: 12, safety: 10, max: 35, status: "ok" },
+  { id: "inv5", name: "Gà nguyên con", unit: "con", current: 5, safety: 10, max: 30, status: "critical" },
+  { id: "inv6", name: "Bánh mì ổ", unit: "ổ", current: 80, safety: 50, max: 200, status: "ok" },
+  { id: "inv7", name: "Xương ống bò", unit: "kg", current: 18, safety: 20, max: 60, status: "low" },
+  { id: "inv8", name: "Trà Oolong", unit: "kg", current: 5, safety: 3, max: 15, status: "ok" },
+];
+
+export const formatPrice = (price: number) => {
+  return new Intl.NumberFormat("vi-VN").format(price) + "đ";
+};

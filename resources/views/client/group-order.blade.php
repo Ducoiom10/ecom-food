@@ -1,0 +1,66 @@
+@extends('layouts.client')
+@section('title', 'Đặt đơn nhóm')
+
+@section('content')
+<div class="min-h-screen bg-[#FAFAF8] flex flex-col items-center justify-center p-4">
+  <div class="w-full max-w-sm">
+
+    {{-- Header --}}
+    <div class="text-center mb-6">
+      <div class="w-20 h-20 bg-[#FFD23F] border-2 border-[#1C1C1C] rounded-2xl shadow-[4px_4px_0px_#1C1C1C] flex items-center justify-center mx-auto mb-3 text-4xl">👥</div>
+      <h1 class="text-2xl font-black text-[#1C1C1C]">Đặt Đơn Nhóm</h1>
+      <p class="text-sm text-gray-500 mt-1">Tạo phòng, mọi người tự chọn, chia bill tự động! 🎉</p>
+    </div>
+
+    {{-- Form --}}
+    <form action="{{ route('client.group-order.create') }}" method="POST" class="bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[4px_4px_0px_#1C1C1C] p-5 space-y-4">
+      @csrf
+      <div>
+        <label class="text-xs font-black text-[#1C1C1C] mb-1 block uppercase tracking-wide">Tên của bạn</label>
+        <input type="text" name="host_name" placeholder="Nhập tên để mọi người nhận ra..."
+          class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-[#FF6B35] focus:shadow-[2px_2px_0px_#FF6B35] transition-all" required />
+      </div>
+
+      <div>
+        <label class="text-xs font-black text-[#1C1C1C] mb-1 block uppercase tracking-wide">Mã phòng của bạn</label>
+        <div class="flex gap-2">
+          <div class="flex-1 bg-[#1C1C1C] text-[#FFD23F] font-black text-center py-3 rounded-xl text-lg tracking-widest border-2 border-[#1C1C1C]" id="room-code">
+            {{ $roomCode ?? 'PHOBO123' }}
+          </div>
+          <button type="button" onclick="copyLink()" class="px-4 py-3 rounded-xl border-2 border-[#1C1C1C] font-bold text-sm bg-[#FFD23F] text-[#1C1C1C] shadow-[2px_2px_0px_#1C1C1C]" id="copy-btn">
+            📋 Copy link
+          </button>
+        </div>
+        <input type="hidden" name="room_code" value="{{ $roomCode ?? 'PHOBO123' }}" />
+        <p class="text-xs text-gray-400 mt-1.5">Gửi link này cho đồng nghiệp vào chọn món cùng</p>
+      </div>
+
+      <button type="submit" class="w-full bg-[#FF6B35] text-white font-black py-3.5 rounded-xl border-2 border-[#1C1C1C] shadow-[4px_4px_0px_#1C1C1C] hover:shadow-[2px_2px_0px_#1C1C1C] hover:translate-x-[1px] hover:translate-y-[1px] transition-all flex items-center justify-center gap-2 text-base">
+        ⚡ Tạo phòng ngay!
+      </button>
+    </form>
+
+    {{-- Join room --}}
+    <div class="mt-4 text-center">
+      <p class="text-sm text-gray-500">Đã có mã phòng?</p>
+      <form action="{{ route('client.group-order.join') }}" method="GET" class="mt-2 flex gap-2">
+        <input type="text" name="code" placeholder="Nhập mã phòng..." class="flex-1 border-2 border-[#1C1C1C] rounded-xl px-3 py-2 text-sm outline-none focus:border-[#FF6B35]" />
+        <button type="submit" class="bg-[#1C1C1C] text-white font-black px-4 py-2 rounded-xl border-2 border-[#1C1C1C] text-sm">Vào →</button>
+      </form>
+    </div>
+
+  </div>
+</div>
+@endsection
+
+@push('scripts')
+<script>
+function copyLink() {
+  const code = document.getElementById('room-code').textContent.trim();
+  navigator.clipboard.writeText(window.location.origin + '/group-order/' + code);
+  const btn = document.getElementById('copy-btn');
+  btn.textContent = '✅ Đã copy!';
+  setTimeout(() => btn.textContent = '📋 Copy link', 2000);
+}
+</script>
+@endpush
