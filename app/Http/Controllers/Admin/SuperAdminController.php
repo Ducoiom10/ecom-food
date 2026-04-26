@@ -40,7 +40,13 @@ class SuperAdminController extends Controller
                 ['key' => 'refund_orders',   'label' => 'Hoàn tiền'],
                 ['key' => 'view_audit_log',  'label' => 'Xem audit log'],
             ],
-            'rolePerms'    => [],
+            'rolePerms'    => [
+                'super_admin'    => ['view_revenue','manage_menu','manage_vouchers','view_orders','update_orders','manage_staff','refund_orders','view_audit_log'],
+                'branch_manager' => ['view_revenue','manage_menu','view_orders','update_orders','refund_orders'],
+                'coordinator'    => ['view_orders','update_orders'],
+                'kitchen_staff'  => ['view_orders','update_orders'],
+                'support'        => ['view_orders','refund_orders'],
+            ],
             'auditLogs'    => AuditLog::with('user')->latest()->take(50)->get(),
         ]);
     }
