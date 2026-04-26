@@ -105,6 +105,21 @@
         @endforelse
       </div>
 
+      {{-- Upsell widget --}}
+      @if(!empty($upsell))
+      <div id="upsell-widget" class="bg-[#FFD23F] border-2 border-[#1C1C1C] rounded-2xl shadow-[3px_3px_0px_#1C1C1C] p-3 flex items-center gap-3">
+        <img src="{{ $upsell->image }}" alt="{{ $upsell->name }}" class="w-12 h-12 object-cover rounded-xl border-2 border-[#1C1C1C] flex-shrink-0" />
+        <div class="flex-1">
+          <p class="font-black text-[#1C1C1C] text-xs">Thêm {{ $upsell->name }} chỉ {{ number_format($upsell->base_price) }}đ?</p>
+          <p class="text-[10px] text-[#1C1C1C]/60">Perfect combo với đơn của bạn 😋</p>
+        </div>
+        <div class="flex flex-col gap-1">
+          <button onclick="addUpsell({{ $upsell->id }})" class="bg-[#FF6B35] text-white text-[10px] font-black px-2 py-1 rounded-lg border border-[#1C1C1C]">+ Thêm</button>
+          <button onclick="document.getElementById('upsell-widget').remove()" class="text-[10px] text-gray-500">Bỏ qua</button>
+        </div>
+      </div>
+      @endif
+
       {{-- Delivery address --}}
       <div class="bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[3px_3px_0px_#1C1C1C] p-4 space-y-3" id="delivery-info">
         <div class="flex items-center gap-2">
@@ -210,7 +225,15 @@
 
 @push('scripts')
 <script>
-const SUBTOTAL = {{ $subtotal ?? 0 }};
+function addUpsell(id) {
+  fetch('/cart/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+    body: JSON.stringify({ product_id: id, quantity: 1 })
+  }).then(() => { document.getElementById('upsell-widget')?.remove(); window.location.reload(); });
+}
+
+
 let deliveryMode = 'delivery', appliedDiscount = 0, isShippingVoucher = false;
 
 function recalcTotal() {

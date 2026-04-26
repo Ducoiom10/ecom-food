@@ -5,13 +5,27 @@
 @section('content')
 <div class="flex flex-col h-full bg-[#0F0F0F]">
 
+  {{-- Offline Banner --}}
+  <div id="offline-banner" class="hidden bg-red-600 border-b-2 border-red-400 px-6 py-3 flex items-center gap-3 z-50 flex-shrink-0">
+    <span class="text-white text-lg flex-shrink-0">📡</span>
+    <div class="flex-1">
+      <p class="text-white font-black text-sm">Mất kết nối mạng!</p>
+      <p class="text-red-200 text-xs">Đang hoạt động ở chế độ Offline · Hành động sẽ được sync khi có mạng trở lại</p>
+    </div>
+    <div class="bg-red-700 text-white text-xs font-black px-3 py-1.5 rounded-lg border border-red-400 animate-pulse">OFFLINE MODE</div>
+  </div>
+
   {{-- Sub-header --}}
   <div class="bg-[#1A1A1A] border-b-2 border-[#333] px-4 lg:px-6 py-3 flex items-center justify-between flex-shrink-0">
     <div class="flex items-center gap-3">
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-1.5" id="net-status">
         <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
         <span class="text-green-400 text-xs font-bold">Online</span>
       </div>
+      <button onclick="toggleOfflineSim()" id="offline-sim-btn"
+        class="text-xs px-3 py-1.5 rounded-lg border border-gray-600 text-gray-400 hover:border-red-500 hover:text-red-400 font-bold transition-all">
+        Mô phỏng Offline
+      </button>
     </div>
     <div class="flex items-center gap-3">
       <div class="flex border border-[#444] rounded-xl overflow-hidden">
@@ -165,6 +179,26 @@ function switchView(view) {
     else { btn.classList.remove('bg-[#FF6B35]','text-white'); btn.classList.add('text-gray-400'); }
   });
 }
+
+// Offline simulation
+let simOffline = false;
+function toggleOfflineSim() {
+  simOffline = !simOffline;
+  const banner = document.getElementById('offline-banner');
+  const btn = document.getElementById('offline-sim-btn');
+  const status = document.getElementById('net-status');
+  if (simOffline) {
+    banner.classList.remove('hidden');
+    btn.textContent = 'Kết nối lại';
+    status.innerHTML = '<div class="w-2 h-2 bg-red-500 rounded-full"></div><span class="text-red-400 text-xs font-bold">Offline</span>';
+  } else {
+    banner.classList.add('hidden');
+    btn.textContent = 'Mô phỏng Offline';
+    status.innerHTML = '<div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div><span class="text-green-400 text-xs font-bold">Online</span>';
+  }
+}
+window.addEventListener('offline', () => document.getElementById('offline-banner').classList.remove('hidden'));
+window.addEventListener('online',  () => document.getElementById('offline-banner').classList.add('hidden'));
 
 // Clock
 setInterval(() => {
