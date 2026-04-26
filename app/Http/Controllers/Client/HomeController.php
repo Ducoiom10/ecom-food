@@ -14,6 +14,7 @@ class HomeController extends Controller
         $menuItems = Product::with('category')
             ->where('is_active', true)
             ->orderByDesc('is_best_seller')
+            ->take(6)
             ->get();
 
         $combos  = Combo::where('is_active', true)->get();

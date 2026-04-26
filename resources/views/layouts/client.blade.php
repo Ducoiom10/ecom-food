@@ -81,10 +81,11 @@
     {{-- Nav --}}
     <nav class="flex-1 p-4 space-y-1">
       @php
+        $cartCount = count(session('cart', []));
         $navItems = [
           ['route'=>'client.home',    'icon'=>'🏠', 'label'=>'Trang chủ'],
           ['route'=>'client.menu',    'icon'=>'🍽️', 'label'=>'Thực đơn'],
-          ['route'=>'client.cart',    'icon'=>'🛒', 'label'=>'Giỏ hàng', 'badge'=>2],
+          ['route'=>'client.cart',    'icon'=>'🛒', 'label'=>'Giỏ hàng', 'badge'=>$cartCount],
           ['route'=>'client.profile', 'icon'=>'👤', 'label'=>'Tài khoản'],
           ['route'=>'client.group-order','icon'=>'👥','label'=>'Đặt nhóm'],
         ];
@@ -124,7 +125,7 @@
         </button>
         <a href="{{ route('client.profile') }}" class="flex items-center gap-2 border-2 border-[#1C1C1C] rounded-xl px-3 py-2 bg-white neo-shadow-sm hover:shadow-none transition-all">
           <div class="w-7 h-7 bg-[#FF6B35] rounded-lg flex items-center justify-center text-white text-sm">👤</div>
-          <span class="font-bold text-sm text-[#1C1C1C]">Minh Tuấn</span>
+          <span class="font-bold text-sm text-[#1C1C1C]">{{ auth()->user()?->name ?? 'Tài khoản' }}</span>
         </a>
       </div>
     </header>
@@ -203,7 +204,7 @@
   {{-- Bottom Nav --}}
   <nav class="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-[#1C1C1C] z-40">
     <div class="flex items-center justify-around px-2 py-2 max-w-lg mx-auto">
-      @foreach([['route'=>'client.home','icon'=>'🏠','label'=>'Trang chủ'],['route'=>'client.menu','icon'=>'🍽️','label'=>'Thực đơn'],['route'=>'client.cart','icon'=>'🛒','label'=>'Giỏ hàng','badge'=>2],['route'=>'client.profile','icon'=>'👤','label'=>'Tài khoản']] as $item)
+      @foreach([['route'=>'client.home','icon'=>'🏠','label'=>'Trang chủ'],['route'=>'client.menu','icon'=>'🍽️','label'=>'Thực đơn'],['route'=>'client.cart','icon'=>'🛒','label'=>'Giỏ hàng','badge'=>count(session('cart',[]))],['route'=>'client.profile','icon'=>'👤','label'=>'Tài khoản']] as $item)
       <a href="{{ route($item['route']) }}"
         class="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all relative {{ request()->routeIs($item['route']) ? 'bg-[#FF6B35] text-white neo-shadow-sm' : 'text-gray-500 hover:text-[#FF6B35]' }}">
         <span class="text-xl">{{ $item['icon'] }}</span>

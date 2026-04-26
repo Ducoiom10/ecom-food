@@ -194,9 +194,9 @@ function validatePassword(input) {
 
 // Loading state khi submit
 document.getElementById('login-form').addEventListener('submit', function(e) {
-  const email = document.getElementById('email').value;
+  const phone = document.getElementById('phone').value;
   const pwd = document.getElementById('password').value;
-  if (!email || !pwd) { e.preventDefault(); return; }
+  if (!phone || !pwd) { e.preventDefault(); return; }
   const btn = document.getElementById('submit-btn');
   document.getElementById('btn-text').textContent = 'Đang đăng nhập...';
   document.getElementById('btn-spinner').classList.remove('hidden');
