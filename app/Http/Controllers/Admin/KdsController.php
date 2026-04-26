@@ -16,7 +16,7 @@ class KdsController extends Controller
             ->orderBy('confirmed_at')
             ->get();
 
-        $inventory = InventoryItem::where('is_low', true)->get(); // TODO: scope
+        $inventory = InventoryItem::whereColumn('current_qty', '<=', 'min_threshold')->get();
 
         return view('admin.kds', compact('orders', 'inventory'));
     }
