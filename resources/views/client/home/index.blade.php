@@ -2,6 +2,13 @@
 @section('title', 'Trang chủ')
 @section('page_heading', 'Trang chủ')
 
+@push('styles')
+<style>
+  @keyframes shimmer { 0%{background-position:-800px 0} 100%{background-position:800px 0} }
+  .skeleton { background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:800px 100%; animation:shimmer 1.5s infinite; border-radius:12px; }
+</style>
+@endpush
+
 @section('content')
 
 {{-- Skeleton --}}
@@ -26,32 +33,241 @@
 
 <div id="main-home" class="hidden">
 <div class="p-4 lg:p-8 max-w-7xl mx-auto">
+
+  {{-- ===== DESKTOP: 2 cột | MOBILE: 1 cột ===== --}}
   <div class="lg:grid lg:grid-cols-3 lg:gap-8">
 
-    {{-- LEFT --}}
+    {{-- LEFT COLUMN (2/3) --}}
     <div class="lg:col-span-2 space-y-6">
-      @include('client.home.partials.hero')
-      @include('client.home.partials.mood-filters')
-      @include('client.home.partials.categories')
-      @include('client.home.partials.best-sellers')
-    </div>
 
-    {{-- RIGHT desktop --}}
+      {{-- Hero Banner --}}
+      <div class="relative overflow-hidden bg-[#1C1C1C] border-2 border-[#1C1C1C] rounded-2xl neo-shadow-orange p-6 lg:p-8">
+        <div class="relative z-10 max-w-sm">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="bg-[#FFD23F] text-[#1C1C1C] text-xs font-black px-2 py-0.5 rounded-full border border-[#1C1C1C]">🔥 HOT DEAL</span>
+            <span class="text-white/60 text-xs">Hôm nay thôi!</span>
+          </div>
+          <h2 class="text-white text-2xl lg:text-3xl font-black mb-2 leading-tight">Combo Trưa<br/>Văn Phòng 🏢</h2>
+          <p class="text-white/70 text-sm mb-5">Mì trộn + Trà sữa chỉ còn <span class="text-[#FFD23F] font-black text-lg">65.000đ</span></p>
+          <a href="{{ route('client.menu') }}" class="inline-flex items-center gap-2 bg-[#FF6B35] text-white font-black px-5 py-2.5 rounded-xl border-2 border-[#FF6B35] shadow-[2px_2px_0px_white] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
+            Đặt ngay →
+          </a>
+        </div>
+        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-7xl lg:text-9xl opacity-10 select-none">🍜</div>
+      </div>
+
+      {{-- Group Order CTA --}}
+      <a href="{{ route('client.group-order') }}" class="block w-full bg-[#FFD23F] border-2 border-[#1C1C1C] rounded-2xl neo-shadow p-4 lg:p-5 flex items-center gap-4 hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
+        <div class="w-12 h-12 lg:w-14 lg:h-14 bg-[#1C1C1C] rounded-xl flex items-center justify-center flex-shrink-0">
+          <span class="text-[#FFD23F] text-2xl lg:text-3xl">👥</span>
+        </div>
+        <div class="flex-1">
+          <div class="font-black text-[#1C1C1C] text-base lg:text-lg flex items-center gap-2">
+            Đặt đơn nhóm
+            <span class="bg-[#FF6B35] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">NEW</span>
+          </div>
+          <p class="text-xs lg:text-sm text-[#1C1C1C]/70 mt-0.5">Tạo phòng, gửi link, mỗi người tự chọn — chia bill tự động!</p>
+        </div>
+        <span class="text-[#1C1C1C] text-xl">›</span>
+      </a>
+
+      {{-- Mood filters --}}
+      <div>
+        <h3 class="font-black text-[#1C1C1C] mb-3 flex items-center gap-2 text-base lg:text-lg">⚡ Hôm nay muốn ăn gì?</h3>
+        <div class="flex gap-2 flex-wrap">
+          @foreach([
+            ['label'=>'Cần ngọt','emoji'=>'🧁','color'=>'bg-pink-100 border-pink-300 text-pink-700'],
+            ['label'=>'Cay xè',  'emoji'=>'🌶️','color'=>'bg-red-100 border-red-300 text-red-700'],
+            ['label'=>'Healthy', 'emoji'=>'🥗','color'=>'bg-green-100 border-green-300 text-green-700'],
+            ['label'=>'No bụng', 'emoji'=>'💪','color'=>'bg-blue-100 border-blue-300 text-blue-700'],
+            ['label'=>'Mau nào', 'emoji'=>'⚡','color'=>'bg-yellow-100 border-yellow-300 text-yellow-700'],
+          ] as $mood)
+          <a href="{{ route('client.menu', ['mood' => $mood['label']]) }}"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 text-xs lg:text-sm font-bold {{ $mood['color'] }} hover:scale-105 transition-transform">
+            {{ $mood['emoji'] }} {{ $mood['label'] }}
+          </a>
+          @endforeach
+        </div>
+      </div>
+
+      {{-- Categories --}}
+      <div class="flex gap-2 flex-wrap">
+        @foreach([
+          ['id'=>'all',    'label'=>'Tất cả', 'emoji'=>'🍽️'],
+          ['id'=>'noodles','label'=>'Mì & Phở','emoji'=>'🍜'],
+          ['id'=>'rice',   'label'=>'Cơm',    'emoji'=>'🍚'],
+          ['id'=>'snacks', 'label'=>'Ăn vặt', 'emoji'=>'🍗'],
+          ['id'=>'drinks', 'label'=>'Đồ uống','emoji'=>'🧋'],
+        ] as $cat)
+        <a href="{{ route('client.menu', ['category' => $cat['id']]) }}"
+          class="flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 border-[#1C1C1C] text-xs lg:text-sm font-bold transition-all
+                 {{ request('category','all') === $cat['id'] ? 'bg-[#FF6B35] text-white shadow-[2px_2px_0px_#1C1C1C]' : 'bg-white text-[#1C1C1C] shadow-[2px_2px_0px_#1C1C1C] hover:shadow-none' }}">
+          {{ $cat['emoji'] }} {{ $cat['label'] }}
+        </a>
+        @endforeach
+      </div>
+
+      {{-- Best Sellers Grid --}}
+      <div>
+        <h3 class="font-black text-[#1C1C1C] mb-4 flex items-center gap-2 text-base lg:text-lg">🔥 Bán chạy nhất</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-4">
+          @foreach($menuItems ?? [] as $item)
+          <div class="bg-white border-2 border-[#1C1C1C] rounded-2xl neo-shadow overflow-hidden hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all group">
+            <a href="{{ route('client.product', $item->id) }}" class="block">
+              <div class="relative overflow-hidden" style="padding-top: 66%">
+                <img src="{{ $item->image }}" alt="{{ $item->name }}"
+                  class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                @if($item->is_new)
+                <div class="absolute top-2 left-2 bg-[#FFD23F] border border-[#1C1C1C] text-[#1C1C1C] text-[9px] font-black px-1.5 py-0.5 rounded-full">✨ NEW</div>
+                @endif
+                @if($item->is_best_seller)
+                <div class="absolute top-2 right-2 bg-[#FF6B35] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">🔥 TOP</div>
+                @endif
+              </div>
+              <div class="p-3">
+                <div class="font-black text-[#1C1C1C] text-sm leading-tight line-clamp-2">{{ $item->name }}</div>
+                <div class="flex items-center gap-1 mt-1 text-[10px] text-gray-500">
+                  <span>⭐ {{ $item->category->name ?? '' }}</span>
+                </div>
+              </div>
+            </a>
+            <div class="px-3 pb-3 flex items-center justify-between">
+              <span class="font-black text-[#FF6B35]">{{ number_format($item->base_price) }}đ</span>
+              <button onclick="addToCart('{{ $item->id }}')"
+                class="w-8 h-8 rounded-lg border-2 border-[#1C1C1C] bg-[#FFD23F] flex items-center justify-center shadow-[2px_2px_0px_#1C1C1C] hover:shadow-none transition-all text-lg font-bold">+</button>
+            </div>
+          </div>
+          @endforeach
+        </div>
+      </div>
+
+    </div>{{-- end left col --}}
+
+    {{-- RIGHT COLUMN (1/3) - Desktop only --}}
     <div class="hidden lg:block space-y-6">
-      @include('client.home.partials.combos-sidebar')
-      @include('client.home.partials.reviews-sidebar')
-      @include('client.home.partials.user-stats')
+
+      {{-- Combos --}}
+      <div class="bg-white border-2 border-[#1C1C1C] rounded-2xl neo-shadow overflow-hidden">
+        <div class="bg-[#1C1C1C] px-4 py-3 flex items-center justify-between">
+          <h3 class="text-white font-black flex items-center gap-2">📈 Combo tiết kiệm</h3>
+          <a href="{{ route('client.menu') }}" class="text-[#FFD23F] text-xs font-bold">Xem thêm ›</a>
+        </div>
+        <div class="p-4 space-y-3">
+          @foreach($combos ?? [] as $combo)
+          <a href="{{ route('client.menu') }}" class="flex gap-3 hover:bg-orange-50 rounded-xl p-2 transition-all block">
+            <div class="relative flex-shrink-0">
+              <img src="{{ $combo->image }}" alt="{{ $combo->name }}" class="w-16 h-16 object-cover rounded-xl border-2 border-[#1C1C1C]" />
+              @if($combo->original_price > $combo->combo_price)
+              <div class="absolute -top-1 -right-1 bg-[#FF6B35] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border border-white">
+                -{{ number_format($combo->original_price - $combo->combo_price) }}đ
+              </div>
+              @endif
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-black text-[#1C1C1C] text-sm">{{ $combo->name }}</div>
+              <div class="text-xs text-gray-500 mt-0.5">{{ $combo->description }}</div>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="font-black text-[#FF6B35] text-sm">{{ number_format($combo->combo_price) }}đ</span>
+                <span class="text-xs text-gray-400 line-through">{{ number_format($combo->original_price) }}đ</span>
+                <span class="bg-green-100 text-green-700 text-[10px] font-black px-1.5 py-0.5 rounded-full">-{{ number_format($combo->original_price - $combo->combo_price) }}đ</span>
+              </div>
+            </div>
+          </a>
+          @endforeach
+        </div>
+      </div>
+
+      {{-- Reviews --}}
+      <div class="bg-white border-2 border-[#1C1C1C] rounded-2xl neo-shadow overflow-hidden">
+        <div class="bg-[#1C1C1C] px-4 py-3">
+          <h3 class="text-white font-black">⭐ Khách hàng nói gì?</h3>
+        </div>
+        <div class="p-4 space-y-3">
+          @foreach($reviews ?? [] as $review)
+          <div class="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+            <div class="flex items-center gap-2 mb-1.5">
+              <div class="w-7 h-7 bg-[#FF6B35] rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0">{{ $review['avatar'] }}</div>
+              <div>
+                <div class="font-bold text-xs text-[#1C1C1C]">{{ $review['user'] }}</div>
+                <div class="text-[#FFD23F] text-xs">{{ str_repeat('⭐', $review['rating']) }}</div>
+              </div>
+            </div>
+            <p class="text-xs text-gray-600 leading-relaxed">"{{ $review['comment'] }}"</p>
+            <div class="text-[10px] text-gray-400 mt-1">{{ $review['item'] }} · {{ $review['time'] }}</div>
+          </div>
+          @endforeach
+        </div>
+      </div>
+
+      {{-- Quick stats --}}
+      <div class="bg-[#1C1C1C] border-2 border-[#1C1C1C] rounded-2xl neo-shadow-orange p-4">
+        <h3 class="text-white font-black mb-3 text-sm">📊 Hôm nay</h3>
+        <div class="grid grid-cols-2 gap-3">
+          @foreach([['label'=>'Đơn đã giao','value'=>'234','color'=>'text-green-400'],['label'=>'Đang giao','value'=>'12','color'=>'text-orange-400'],['label'=>'Đánh giá TB','value'=>'4.8⭐','color'=>'text-yellow-400'],['label'=>'Doanh thu','value'=>'15.6M','color'=>'text-blue-400']] as $stat)
+          <div class="bg-white/10 rounded-xl p-3 text-center">
+            <div class="font-black text-lg {{ $stat['color'] }}">{{ $stat['value'] }}</div>
+            <div class="text-white/60 text-[10px] mt-0.5">{{ $stat['label'] }}</div>
+          </div>
+          @endforeach
+        </div>
+      </div>
+
+    </div>{{-- end right col --}}
+  </div>
+
+  {{-- Mobile: Combos & Reviews (below grid) --}}
+  <div class="lg:hidden mt-6 space-y-6">
+    {{-- Combos --}}
+    <div>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-black text-[#1C1C1C] flex items-center gap-2">📈 Combo tiết kiệm</h3>
+        <a href="{{ route('client.menu') }}" class="text-[#FF6B35] text-xs font-bold">Xem thêm ›</a>
+      </div>
+      <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+        @foreach($combos ?? [] as $combo)
+        <a href="{{ route('client.menu') }}" class="flex-shrink-0 w-48 bg-white border-2 border-[#1C1C1C] rounded-2xl neo-shadow overflow-hidden block">
+          <div class="h-24 overflow-hidden relative">
+            <img src="{{ $combo->image }}" alt="{{ $combo->name }}" class="w-full h-full object-cover" />
+            @if($combo->original_price > $combo->combo_price)
+            <div class="absolute top-2 left-2 bg-[#FF6B35] text-white text-[10px] font-black px-2 py-0.5 rounded-full border border-white shadow">
+              Tiết kiệm {{ number_format($combo->original_price - $combo->combo_price) }}đ
+            </div>
+            @endif
+          </div>
+          <div class="p-3">
+            <div class="font-black text-[#1C1C1C] text-xs">{{ $combo->name }}</div>
+            <div class="flex items-center gap-1 mt-1">
+              <span class="font-black text-[#FF6B35] text-sm">{{ number_format($combo->combo_price) }}đ</span>
+              <span class="text-[10px] text-gray-400 line-through">{{ number_format($combo->original_price) }}đ</span>
+            </div>
+          </div>
+        </a>
+        @endforeach
+      </div>
+    </div>
+
+    {{-- Reviews --}}
+    <div>
+      <h3 class="font-black text-[#1C1C1C] mb-3">⭐ Khách hàng nói gì?</h3>
+      <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+        @foreach($reviews ?? [] as $review)
+        <div class="flex-shrink-0 w-64 bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[3px_3px_0px_#1C1C1C] p-3">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-8 h-8 bg-[#FF6B35] rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0">{{ $review['avatar'] }}</div>
+            <div>
+              <div class="font-bold text-xs text-[#1C1C1C]">{{ $review['user'] }}</div>
+              <div class="text-[#FFD23F] text-xs">{{ str_repeat('⭐', $review['rating']) }}</div>
+            </div>
+          </div>
+          <p class="text-xs text-gray-600 leading-relaxed">"{{ $review['comment'] }}"</p>
+        </div>
+        @endforeach
+      </div>
     </div>
   </div>
 
-  {{-- Mobile combos & reviews --}}
-  <div class="lg:hidden mt-6 space-y-6">
-    @include('client.home.partials.combos-mobile')
-    @include('client.home.partials.reviews-mobile')
-  </div>
 </div>
-</div>
-
+</div>{{-- end main-home --}}
 @endsection
 
 @push('scripts')
@@ -60,17 +276,13 @@ window.addEventListener('load', () => {
   document.getElementById('skeleton-home').classList.add('hidden');
   document.getElementById('main-home').classList.remove('hidden');
 });
-function addToCart(productId) {
-  fetch('{{ route('client.cart.add') }}', {
+function addToCart(id) {
+  fetch('/cart/add', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-    body: JSON.stringify({ product_id: productId, quantity: 1 })
-  }).then(r => r.json()).then(data => {
-    if (data.ok) {
-      const btn = event.target;
-      btn.textContent = '✓'; btn.classList.add('bg-green-500','text-white');
-      setTimeout(() => { btn.textContent = '+'; btn.classList.remove('bg-green-500','text-white'); }, 1500);
-    }
+    body: JSON.stringify({ product_id: id, quantity: 1 })
+  }).then(r => r.json()).then(() => {
+    if (typeof showToast === 'function') showToast('Đã thêm vào giỏ hàng 🛒', 'success');
   });
 }
 </script>
