@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\SmartPrepLog;
+use App\Models\Inventory\SmartPrepLog;
 
 class SmartPrepController extends Controller
 {
@@ -12,13 +12,13 @@ class SmartPrepController extends Controller
         $weather = request('weather', 'rainy');
 
         $weatherConfig = [
-            'sunny'  => ['icon' => '☀️',  'temp' => 35, 'label' => 'Nắng nóng',  'impact' => 'Nắng nóng → Đơn đồ uống tăng 40%!',    'deliveryBoost' => 10],
-            'cloudy' => ['icon' => '☁️',  'temp' => 28, 'label' => 'Nhiều mây',  'impact' => 'Thời tiết bình thường, dự báo ổn định.', 'deliveryBoost' => 0],
-            'rainy'  => ['icon' => '🌧️', 'temp' => 24, 'label' => 'Mưa lớn',    'impact' => 'Mưa lớn → Đơn ship tăng 85%!',          'deliveryBoost' => 85],
-            'stormy' => ['icon' => '⛈️', 'temp' => 20, 'label' => 'Bão',         'impact' => 'Bão → Đơn ship tăng 120%! Chuẩn bị gấp!','deliveryBoost' => 120],
+            'sunny'  => ['icon' => '☀️',  'temp' => 35, 'label' => 'Nắng nóng',  'impact' => 'Nắng nóng → Đơn đồ uống tăng 40%!',     'deliveryBoost' => 10],
+            'cloudy' => ['icon' => '☁️',  'temp' => 28, 'label' => 'Nhiều mây',  'impact' => 'Thời tiết bình thường, dự báo ổn định.',  'deliveryBoost' => 0],
+            'rainy'  => ['icon' => '🌧️', 'temp' => 24, 'label' => 'Mưa lớn',    'impact' => 'Mưa lớn → Đơn ship tăng 85%!',           'deliveryBoost' => 85],
+            'stormy' => ['icon' => '⛈️', 'temp' => 20, 'label' => 'Bão',         'impact' => 'Bão → Đơn ship tăng 120%! Chuẩn bị gấp!', 'deliveryBoost' => 120],
         ];
 
-        $hour = now()->hour;
+        $hour       = now()->hour;
         $mealPeriod = match(true) {
             $hour >= 6  && $hour < 10 => ['name' => 'Bữa sáng',  'emoji' => '🌅', 'peak' => false],
             $hour >= 10 && $hour < 14 => ['name' => 'Bữa trưa',  'emoji' => '☀️', 'peak' => true],
@@ -32,7 +32,7 @@ class SmartPrepController extends Controller
             ->orderByRaw("CASE urgency WHEN 'critical' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END")
             ->get();
 
-        return view('admin.smart-prep', [
+        return view('admin.dashboard.smart-prep', [
             'recommendations'  => $recommendations,
             'weather'          => $weatherConfig[$weather] ?? $weatherConfig['rainy'],
             'currentWeather'   => $weather,

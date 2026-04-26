@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
+use App\Models\Order\Order;
 
 class OrderController extends Controller
 {
@@ -13,6 +13,6 @@ class OrderController extends Controller
             ->where('user_id', auth()->id())
             ->findOrFail($id);
 
-        return view('client.order-tracking', compact('order'));
+        return view('client.orders.detail', compact('order'));
     }
 }

@@ -9,10 +9,8 @@
     body { font-family: 'Segoe UI', sans-serif; }
     .neo-shadow { box-shadow: 4px 4px 0px #1C1C1C; }
     .neo-shadow-sm { box-shadow: 2px 2px 0px #1C1C1C; }
-    /* Input states */
     .input-valid   { border-color: #16a34a !important; box-shadow: 2px 2px 0px #16a34a; }
     .input-invalid { border-color: #dc2626 !important; box-shadow: 2px 2px 0px #dc2626; }
-    /* Loading spinner */
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner { width:18px; height:18px; border:2px solid rgba(255,255,255,.3); border-top-color:white; border-radius:50%; animation:spin .7s linear infinite; display:inline-block; }
   </style>
@@ -32,14 +30,19 @@
     <p class="text-gray-600 text-sm mt-1">Đăng nhập để đặt món ngon 😋</p>
   </div>
 
-  {{-- Error session --}}
-  @if(session('error'))
+  {{-- Session errors --}}
+  @if($errors->any())
   <div class="bg-red-50 border-2 border-red-400 rounded-xl px-4 py-3 mb-4 flex items-center gap-2 text-red-700 text-sm font-bold">
-    <span class="text-lg">⚠️</span> {{ session('error') }}
+    <span>⚠️</span> {{ $errors->first() }}
   </div>
   @endif
 
-  {{-- Form --}}
+  @if(session('sent'))
+  <div class="bg-green-50 border-2 border-green-400 rounded-xl px-4 py-3 mb-4 text-green-700 text-sm font-bold">
+    ✅ Đã gửi link đặt lại mật khẩu!
+  </div>
+  @endif
+
   <div class="bg-white border-2 border-[#1C1C1C] rounded-2xl neo-shadow p-6 lg:p-8">
     <form id="login-form" action="{{ route('login.post') }}" method="POST" class="space-y-5" novalidate>
       @csrf
@@ -52,13 +55,12 @@
         <div class="relative">
           <input type="tel" id="phone" name="phone" value="{{ old('phone') }}"
             placeholder="0901 234 567" autocomplete="tel"
-            class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-3 text-sm outline-none transition-all pr-10
-                   @error('phone') input-invalid @enderror"
+            class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-3 text-sm outline-none transition-all pr-10 @error('phone') input-invalid @enderror"
             oninput="validatePhone(this)" onblur="validatePhone(this)" />
           <span id="phone-icon" class="absolute right-3 top-1/2 -translate-y-1/2 text-base hidden"></span>
         </div>
-        <p id="phone-error" class="text-red-600 text-xs mt-1 font-medium hidden">
-          @error('phone'){{ $message }}@enderror
+        <p id="phone-error" class="text-red-600 text-xs mt-1 font-medium @error('phone') block @else hidden @enderror">
+          {{ $errors->first('phone') }}
         </p>
       </div>
 
@@ -73,19 +75,15 @@
         <div class="relative">
           <input type="password" id="password" name="password"
             placeholder="••••••••" autocomplete="current-password"
-            class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-3 text-sm outline-none transition-all pr-20
-                   @error('password') input-invalid @enderror"
+            class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-3 text-sm outline-none transition-all pr-20 @error('password') input-invalid @enderror"
             oninput="validatePassword(this)" onblur="validatePassword(this)" />
           <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
             <span id="pwd-icon" class="text-base hidden"></span>
-            <button type="button" onclick="togglePwd('password', this)"
-              class="text-gray-400 hover:text-[#1C1C1C] transition-colors text-sm font-bold">
-              Hiện
-            </button>
+            <button type="button" onclick="togglePwd('password', this)" class="text-gray-400 hover:text-[#1C1C1C] text-sm font-bold transition-colors">Hiện</button>
           </div>
         </div>
-        <p id="password-error" class="text-red-600 text-xs mt-1 font-medium hidden">
-          @error('password'){{ $message }}@enderror
+        <p id="password-error" class="text-red-600 text-xs mt-1 font-medium @error('password') block @else hidden @enderror">
+          {{ $errors->first('password') }}
         </p>
       </div>
 
@@ -102,35 +100,14 @@
         <span class="text-sm text-gray-700 group-hover:text-[#1C1C1C] transition-colors">Ghi nhớ đăng nhập</span>
       </label>
 
-      {{-- Submit --}}
       <button type="submit" id="submit-btn"
         class="w-full bg-[#FF6B35] text-white font-black py-3.5 rounded-xl border-2 border-[#1C1C1C] neo-shadow hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-base flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-x-0 disabled:translate-y-0 disabled:shadow-none">
         <span id="btn-text">⚡ Đăng nhập</span>
         <span id="btn-spinner" class="spinner hidden"></span>
       </button>
     </form>
-
-    {{-- Divider --}}
-    <div class="flex items-center gap-3 my-5">
-      <div class="flex-1 h-px bg-gray-200"></div>
-      <span class="text-xs text-gray-500 font-medium">hoặc đăng nhập với</span>
-      <div class="flex-1 h-px bg-gray-200"></div>
-    </div>
-
-    {{-- Social --}}
-    <div class="grid grid-cols-2 gap-3">
-      <button class="flex items-center justify-center gap-2 py-2.5 border-2 border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:border-[#1C1C1C] hover:bg-gray-50 transition-all neo-shadow-sm hover:shadow-none">
-        <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        Google
-      </button>
-      <button class="flex items-center justify-center gap-2 py-2.5 border-2 border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:border-[#1C1C1C] hover:bg-gray-50 transition-all neo-shadow-sm hover:shadow-none">
-        <svg class="w-4 h-4" fill="#1877F2" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-        Facebook
-      </button>
-    </div>
   </div>
 
-  {{-- Register link --}}
   <p class="text-center text-sm text-gray-600 mt-5">
     Chưa có tài khoản?
     <a href="{{ route('register') }}" class="text-[#FF6B35] font-black hover:underline">Đăng ký ngay →</a>
@@ -144,63 +121,45 @@
 <script>
 function togglePwd(id, btn) {
   const el = document.getElementById(id);
-  const isHidden = el.type === 'password';
-  el.type = isHidden ? 'text' : 'password';
-  btn.textContent = isHidden ? 'Ẩn' : 'Hiện';
+  el.type = el.type === 'password' ? 'text' : 'password';
+  btn.textContent = el.type === 'text' ? 'Ẩn' : 'Hiện';
 }
 
-function setInputState(input, iconEl, errorEl, isValid, errorMsg) {
-  input.classList.remove('input-valid', 'input-invalid');
-  iconEl.classList.add('hidden');
-  errorEl.classList.add('hidden');
-  if (input.value === '') return;
+function setInputState(input, iconId, errorId, isValid, errorMsg) {
+  input.classList.remove('input-valid','input-invalid');
+  document.getElementById(iconId).classList.add('hidden');
+  document.getElementById(errorId).classList.add('hidden');
+  if (!input.value) return;
   if (isValid) {
     input.classList.add('input-valid');
-    iconEl.textContent = '✅';
-    iconEl.classList.remove('hidden');
+    document.getElementById(iconId).textContent = '✅';
+    document.getElementById(iconId).classList.remove('hidden');
   } else {
     input.classList.add('input-invalid');
-    iconEl.textContent = '❌';
-    iconEl.classList.remove('hidden');
-    errorEl.textContent = errorMsg;
-    errorEl.classList.remove('hidden');
+    document.getElementById(iconId).textContent = '❌';
+    document.getElementById(iconId).classList.remove('hidden');
+    document.getElementById(errorId).textContent = errorMsg;
+    document.getElementById(errorId).classList.remove('hidden');
   }
 }
 
 function validatePhone(input) {
   const ok = /^(0|\+84)[0-9]{8,9}$/.test(input.value.replace(/\s/g,''));
-  setInputState(input, document.getElementById('phone-icon'), document.getElementById('phone-error'),
-    ok, 'Số điện thoại không hợp lệ');
+  setInputState(input, 'phone-icon', 'phone-error', ok, 'Số điện thoại không hợp lệ');
 }
 
 function validatePassword(input) {
   const ok = input.value.length >= 6;
-  setInputState(input, document.getElementById('pwd-icon'), document.getElementById('password-error'),
-    ok, 'Mật khẩu tối thiểu 6 ký tự');
+  setInputState(input, 'pwd-icon', 'password-error', ok, 'Mật khẩu tối thiểu 6 ký tự');
 }
 
-// Show lỗi từ Laravel ngay khi load
-@php $phoneErr = $errors->first('phone'); $pwdErr = $errors->first('password'); @endphp
-@if($phoneErr)
-  document.getElementById('phone').classList.add('input-invalid');
-  document.getElementById('phone-error').textContent = '{{ $phoneErr }}';
-  document.getElementById('phone-error').classList.remove('hidden');
-@endif
-@if($pwdErr)
-  document.getElementById('password').classList.add('input-invalid');
-  document.getElementById('password-error').textContent = '{{ $pwdErr }}';
-  document.getElementById('password-error').classList.remove('hidden');
-@endif
-
-// Loading state khi submit
 document.getElementById('login-form').addEventListener('submit', function(e) {
   const phone = document.getElementById('phone').value;
-  const pwd = document.getElementById('password').value;
+  const pwd   = document.getElementById('password').value;
   if (!phone || !pwd) { e.preventDefault(); return; }
-  const btn = document.getElementById('submit-btn');
   document.getElementById('btn-text').textContent = 'Đang đăng nhập...';
   document.getElementById('btn-spinner').classList.remove('hidden');
-  btn.disabled = true;
+  document.getElementById('submit-btn').disabled = true;
 });
 </script>
 </body>

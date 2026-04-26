@@ -3,28 +3,28 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
-use App\Models\Shipper;
+use App\Models\Delivery\Shipper;
+use App\Models\Order\Order;
 use Illuminate\Http\Request;
 
 class DispatchController extends Controller
 {
     public function index()
     {
-        $orders  = Order::with('shipper', 'user')
+        $orders = Order::with('shipper', 'user')
             ->whereIn('status', ['ready', 'delivering'])
             ->latest()
             ->get();
 
         $shippers = Shipper::all();
 
-        return view('admin.dispatch', [
-            'orders'        => $orders,
-            'shippers'      => $shippers,
-            'activeCount'   => $orders->count(),
-            'freeShippers'  => $shippers->where('status', 'free')->count(),
-            'todayCount'    => Order::whereDate('created_at', today())->count(),
-            'batchableCount'=> $orders->where('status', 'ready')->count(),
+        return view('admin.dashboard.dispatch', [
+            'orders'         => $orders,
+            'shippers'       => $shippers,
+            'activeCount'    => $orders->count(),
+            'freeShippers'   => $shippers->where('status', 'free')->count(),
+            'todayCount'     => Order::whereDate('created_at', today())->count(),
+            'batchableCount' => $orders->where('status', 'ready')->count(),
         ]);
     }
 

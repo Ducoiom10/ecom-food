@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\LoyaltyChallenge;
-use App\Models\UserChallengeProgress;
+use App\Models\Loyalty\LoyaltyChallenge;
+use App\Models\Loyalty\UserChallengeProgress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -19,7 +19,7 @@ class ProfileController extends Controller
         $progressMap = UserChallengeProgress::where('user_id', $user->id)
             ->get()->keyBy('challenge_id');
 
-        return view('client.profile', [
+        return view('client.profile.index', [
             'user'         => $user,
             'snackPoints'  => $user->snack_points,
             'orderHistory' => $user->orders()->with('items.product')->latest()->take(10)->get(),
@@ -30,7 +30,7 @@ class ProfileController extends Controller
 
     public function edit()
     {
-        return view('client.profile-edit', ['user' => auth()->user()]);
+        return view('client.profile.edit', ['user' => auth()->user()]);
     }
 
     public function update(Request $request)
@@ -49,7 +49,7 @@ class ProfileController extends Controller
 
     public function showChangePassword()
     {
-        return view('client.change-password');
+        return view('client.profile.change-password');
     }
 
     public function changePassword(Request $request)

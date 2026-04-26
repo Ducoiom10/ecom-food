@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AuditLog;
-use App\Models\Branch;
-use App\Models\Order;
-use App\Models\PushCampaign;
-use App\Models\User;
-use App\Models\Voucher;
+use App\Models\Order\Order;
+use App\Models\Promotion\PushCampaign;
+use App\Models\Promotion\Voucher;
+use App\Models\System\AuditLog;
+use App\Models\System\Branch;
 use Illuminate\Http\Request;
 
 class SuperAdminController extends Controller
@@ -23,7 +22,7 @@ class SuperAdminController extends Controller
             ->get()
             ->map(fn($r) => ['day' => ['CN','T2','T3','T4','T5','T6','T7'][$r->day] ?? '?', 'revenue' => $r->revenue]);
 
-        return view('admin.super', [
+        return view('admin.dashboard.super', [
             'activeTab'    => request('tab', 'analytics'),
             'totalRevenue' => $totalRevenue,
             'revenueData'  => $revenueData,
@@ -72,7 +71,7 @@ class SuperAdminController extends Controller
 
     public function updatePerm(Request $request)
     {
-        // TODO: Sprint 3 — lưu permissions vào DB
+        // TODO: lưu permissions vào DB
         return back();
     }
 }

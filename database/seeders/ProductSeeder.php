@@ -3,12 +3,12 @@
 namespace Database\Seeders;
 
 use App\Data\MockData;
-use App\Models\Category;
-use App\Models\Combo;
-use App\Models\ComboItem;
-use App\Models\Product;
-use App\Models\ProductOption;
-use App\Models\ProductOptionValue;
+use App\Models\Catalog\Category;
+use App\Models\Catalog\Combo;
+use App\Models\Catalog\ComboItem;
+use App\Models\Catalog\Product;
+use App\Models\Catalog\ProductOption;
+use App\Models\Catalog\ProductOptionValue;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -16,7 +16,6 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        // ── Categories ─────────────────────────────────────────
         $catMap = [];
         foreach ([
             ['name' => 'Mì & Phở', 'slug' => 'noodles', 'icon' => '🍜', 'priority' => 1],
@@ -27,7 +26,6 @@ class ProductSeeder extends Seeder
             $catMap[$c['slug']] = Category::create($c);
         }
 
-        // ── Products ───────────────────────────────────────────
         $productMap = [];
         foreach (MockData::menuItems() as $item) {
             $cat     = $catMap[$item['category']] ?? $catMap['snacks'];
@@ -61,20 +59,12 @@ class ProductSeeder extends Seeder
             $productMap[$item['id']] = $product;
         }
 
-        // ── Combos ─────────────────────────────────────────────
         foreach ([
             ['name' => 'Combo Văn phòng A', 'description' => 'Mì trộn + Trà sữa M',        'combo_price' => 65000, 'original_price' => 80000,  'image' => 'https://images.unsplash.com/photo-1658706117692-f80a370adde3?w=300&q=80', 'items' => ['1','2']],
             ['name' => 'Combo Bựa B',       'description' => 'Gà rán 4 miếng + Trà sữa L', 'combo_price' => 90000, 'original_price' => 115000, 'image' => 'https://images.unsplash.com/photo-1765360024320-b2ab819c6f75?w=300&q=80', 'items' => ['4','2']],
             ['name' => 'Combo Phở Deluxe',  'description' => 'Phở bò + Sinh tố xoài',       'combo_price' => 85000, 'original_price' => 105000, 'image' => 'https://images.unsplash.com/photo-1677011454858-8ecb6d4e6ce0?w=300&q=80', 'items' => ['6','5']],
         ] as $c) {
-            $combo = Combo::create([
-                'name'           => $c['name'],
-                'description'    => $c['description'],
-                'combo_price'    => $c['combo_price'],
-                'original_price' => $c['original_price'],
-                'image'          => $c['image'],
-                'is_active'      => true,
-            ]);
+            $combo = Combo::create(['name' => $c['name'], 'description' => $c['description'], 'combo_price' => $c['combo_price'], 'original_price' => $c['original_price'], 'image' => $c['image'], 'is_active' => true]);
             foreach ($c['items'] as $mockId) {
                 if (isset($productMap[$mockId])) {
                     ComboItem::create(['combo_id' => $combo->id, 'product_id' => $productMap[$mockId]->id, 'quantity' => 1]);

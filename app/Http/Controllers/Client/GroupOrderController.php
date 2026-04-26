@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Branch;
-use App\Models\GroupRoom;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Participant;
-use App\Models\Product;
+use App\Models\Catalog\Product;
+use App\Models\Group\GroupRoom;
+use App\Models\Group\Participant;
+use App\Models\Order\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -17,8 +15,8 @@ class GroupOrderController extends Controller
 {
     public function index()
     {
-        $branches = Branch::where('status', 'open')->get();
-        return view('client.group-order', compact('branches'));
+        $branches = \App\Models\System\Branch::where('status', 'open')->get();
+        return view('client.group-orders.index', compact('branches'));
     }
 
     public function create(Request $request)
@@ -50,7 +48,6 @@ class GroupOrderController extends Controller
         $code = strtoupper(trim($request->code));
         $room = GroupRoom::where('room_code', $code)->firstOrFail();
 
-        // Tham gia nếu chưa có
         $existing = $room->participants()->where('user_id', auth()->id())->first();
         if (!$existing) {
             Participant::create([
@@ -74,19 +71,17 @@ class GroupOrderController extends Controller
         $myParticipant = $room->participants->firstWhere('user_id', auth()->id());
         $myOrder       = $myParticipant?->orders->first();
         $myItems       = $myOrder?->items ?? collect();
+        $products      = Product::with('category')->where('is_active', true)->get();
+        $grandTotal    = $room->participants->sum(fn($p) => $p->orders->sum('grand_total'));
 
-        $products = Product::with('category')->where('is_active', true)->get();
-
-        $grandTotal = $room->participants->sum(fn($p) => $p->orders->sum('grand_total'));
-
-        return view('client.group-order-room', [
-            'room'        => $room,
-            'products'    => $products,
-            'myItems'     => $myItems,
-            'myItemCount' => $myItems->sum('quantity'),
-            'myTotal'     => $myItems->sum(fn($i) => $i->price * $i->quantity),
-            'grandTotal'  => $grandTotal,
-            'isHost'      => $myParticipant?->is_host ?? false,
+        return view('client.group-orders.room', [
+            'room'          => $room,
+            'products'      => $products,
+            'myItems'       => $myItems,
+            'myItemCount'   => $myItems->sum('quantity'),
+            'myTotal'       => $myItems->sum(fn($i) => $i->price * $i->quantity),
+            'grandTotal'    => $grandTotal,
+            'isHost'        => $myParticipant?->is_host ?? false,
             'myParticipant' => $myParticipant,
         ]);
     }
@@ -99,7 +94,6 @@ class GroupOrderController extends Controller
         $participant = $room->participants()->where('user_id', auth()->id())->firstOrFail();
         $product     = Product::findOrFail($request->product_id);
 
-        // Lấy hoặc tạo order cho participant
         $order = $participant->orders()->firstOrCreate(
             ['group_room_id' => $room->id],
             [
@@ -117,24 +111,12 @@ class GroupOrderController extends Controller
         $item = $order->items()->where('product_id', $product->id)->first();
 
         if ($request->action === 'add') {
-            if ($item) {
-                $item->increment('quantity');
-            } else {
-                $order->items()->create([
-                    'product_id' => $product->id,
-                    'quantity'   => 1,
-                    'price'      => $product->base_price,
-                ]);
-            }
+            $item ? $item->increment('quantity')
+                  : $order->items()->create(['product_id' => $product->id, 'quantity' => 1, 'price' => $product->base_price]);
         } elseif ($request->action === 'remove' && $item) {
-            if ($item->quantity > 1) {
-                $item->decrement('quantity');
-            } else {
-                $item->delete();
-            }
+            $item->quantity > 1 ? $item->decrement('quantity') : $item->delete();
         }
 
-        // Cập nhật grand_total
         $order->update(['grand_total' => $order->items()->sum(DB::raw('price * quantity'))]);
 
         return back();
@@ -142,9 +124,7 @@ class GroupOrderController extends Controller
 
     public function lock(string $code)
     {
-        $room = GroupRoom::where('room_code', $code)->firstOrFail();
-        $room->update(['is_locked' => true, 'status' => 'locked']);
-
+        GroupRoom::where('room_code', $code)->firstOrFail()->update(['is_locked' => true, 'status' => 'locked']);
         return redirect()->route('client.split-bill', $code);
     }
 
@@ -157,6 +137,6 @@ class GroupOrderController extends Controller
         $bills      = $room->participants;
         $grandTotal = $bills->sum(fn($p) => $p->orders->sum('grand_total'));
 
-        return view('client.split-bill', compact('room', 'bills', 'grandTotal'));
+        return view('client.group-orders.split-bill', compact('room', 'bills', 'grandTotal'));
     }
 }

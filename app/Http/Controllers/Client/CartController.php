@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Models\Voucher;
+use App\Models\Catalog\Product;
+use App\Models\Promotion\Voucher;
+use App\Models\Promotion\VoucherUsage;
+use App\Models\System\Branch;
+use App\Models\Order\Order;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
@@ -24,7 +27,7 @@ class CartController extends Controller
             ->inRandomOrder()
             ->first();
 
-        return view('client.cart', compact('cart', 'subtotal', 'vouchers', 'upsell'));
+        return view('client.cart.index', compact('cart', 'subtotal', 'vouchers', 'upsell'));
     }
 
     public function add(Request $request)
@@ -115,7 +118,7 @@ class CartController extends Controller
 
     public function checkout()
     {
-        return $this->index();
+        return view('client.cart.checkout', compact('cart', 'subtotal', 'vouchers', 'upsell'));
     }
 
     public function placeOrder(Request $request)
@@ -146,15 +149,14 @@ class CartController extends Controller
         }
 
         $grandTotal = max(0, $subtotal + $shippingFee - $discountAmount);
+        $order      = null;
 
-        $order = null;
         \DB::transaction(function () use ($request, $cart, $subtotal, $shippingFee, $discountAmount, $grandTotal, $voucherId, $appliedVoucher, &$order) {
-            // Tạo order
-            $branchCode = \App\Models\Branch::find($request->branch_id)->name;
+            $branchCode = Branch::find($request->branch_id)->name;
             $branchCode = strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $branchCode), 0, 2));
 
-            $order = \App\Models\Order::create([
-                'order_number'     => \App\Models\Order::generateOrderNumber($branchCode),
+            $order = Order::create([
+                'order_number'     => Order::generateOrderNumber($branchCode),
                 'user_id'          => auth()->id(),
                 'branch_id'        => $request->branch_id,
                 'voucher_id'       => $voucherId,
@@ -168,22 +170,18 @@ class CartController extends Controller
                 'delivery_address' => $request->delivery_address,
             ]);
 
-            // Tạo order items
             foreach ($cart as $item) {
-                $orderItem = $order->items()->create([
+                $order->items()->create([
                     'product_id' => $item['product_id'],
                     'quantity'   => $item['quantity'],
                     'price'      => $item['price'],
                     'note'       => $item['note'],
                 ]);
-
-                // TODO: lưu option_value_ids khi có
             }
 
-            // Cập nhật voucher used_count
             if ($voucherId) {
-                \App\Models\Voucher::where('id', $voucherId)->increment('used_count');
-                \App\Models\VoucherUsage::create([
+                Voucher::where('id', $voucherId)->increment('used_count');
+                VoucherUsage::create([
                     'voucher_id'       => $voucherId,
                     'user_id'          => auth()->id(),
                     'order_id'         => $order->id,

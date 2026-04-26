@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\InventoryItem;
-use App\Models\Order;
+use App\Models\Inventory\InventoryItem;
+use App\Models\Order\Order;
 
 class KdsController extends Controller
 {
@@ -18,7 +18,7 @@ class KdsController extends Controller
 
         $inventory = InventoryItem::whereColumn('current_qty', '<=', 'min_threshold')->get();
 
-        return view('admin.kds', compact('orders', 'inventory'));
+        return view('admin.dashboard.kds', compact('orders', 'inventory'));
     }
 
     public function move(int $id)
