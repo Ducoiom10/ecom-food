@@ -5,7 +5,7 @@
 @section('content')
 <div class="h-full flex flex-col lg:flex-row overflow-hidden bg-[#0F0F0F]">
 
-  {{-- Map (hidden on mobile, shown on desktop) --}}
+  {{-- Map --}}
   <div class="hidden lg:block flex-1 relative overflow-hidden bg-[#111]">
     <div class="absolute inset-0 opacity-20">
       <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -24,20 +24,25 @@
       </div>
       <div class="bg-[#1A1A1A]/90 backdrop-blur border border-[#333] rounded-xl px-3 py-2 text-xs text-gray-400">🔄 Cập nhật mỗi 10s</div>
     </div>
-    @foreach($shippers ?? [] as $s)
-    <div class="absolute flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2" style="left:{{ $s['mapX']??'30%' }};top:{{ $s['mapY']??'40%' }}">
-      <div class="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center font-black text-white shadow-xl {{ $s['status']==='free'?'bg-green-500':'bg-[#FF6B35]' }}">{{ $s['avatar'] }}</div>
-      @if($s['currentOrder']??null)<div class="mt-1 bg-[#1A1A1A] border border-[#444] text-white text-[9px] font-bold px-2 py-0.5 rounded-full">{{ $s['currentOrder'] }}</div>@endif
-      <div class="mt-0.5 w-2 h-2 rounded-full animate-ping {{ $s['status']==='free'?'bg-green-500':'bg-orange-500' }}"></div>
+    @foreach($shippers as $s)
+    <div class="absolute flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2"
+         style="left:{{ 20 + ($loop->index * 15) }}%;top:{{ 30 + ($loop->index * 12) }}%">
+      <div class="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center font-black text-white shadow-xl {{ $s->isFree() ? 'bg-green-500' : 'bg-[#FF6B35]' }}">
+        {{ strtoupper(substr($s->name, 0, 1)) }}
+      </div>
+      @if(!$s->isFree())
+      <div class="mt-1 bg-[#1A1A1A] border border-[#444] text-white text-[9px] font-bold px-2 py-0.5 rounded-full">{{ $s->active_order_count }} đơn</div>
+      @endif
+      <div class="mt-0.5 w-2 h-2 rounded-full animate-ping {{ $s->isFree() ? 'bg-green-500' : 'bg-orange-500' }}"></div>
     </div>
     @endforeach
     <div class="absolute" style="left:55%;top:50%">
       <div class="w-8 h-8 bg-[#FFD23F] border-2 border-[#1C1C1C] rounded-xl flex items-center justify-center shadow-xl text-lg transform -translate-x-1/2 -translate-y-1/2">🍜</div>
     </div>
-    @if(($batchableCount??0)>=2)
+    @if($batchableCount >= 2)
     <div class="absolute bottom-4 left-4 bg-[#FFD23F]/90 border-2 border-[#1C1C1C] rounded-xl px-4 py-3 max-w-xs">
       <div class="flex items-center gap-2 mb-1"><span>👥</span><span class="font-black text-[#1C1C1C] text-sm">Gom đơn thông minh</span></div>
-      <p class="text-xs text-[#1C1C1C]/80">{{ $batchableCount }} đơn trong bán kính Q1 · Có thể gom 1 chuyến!</p>
+      <p class="text-xs text-[#1C1C1C]/80">{{ $batchableCount }} đơn sẵn sàng · Có thể gom 1 chuyến!</p>
     </div>
     @endif
   </div>
@@ -48,34 +53,30 @@
     {{-- Stats --}}
     <div class="grid grid-cols-3 border-b-2 border-[#333]">
       <div class="px-4 py-3 text-center border-r border-[#333]">
-        <div class="font-black text-lg text-orange-400">{{ $activeCount??0 }}</div>
+        <div class="font-black text-lg text-orange-400">{{ $activeCount }}</div>
         <div class="text-gray-500 text-[10px]">Đang active</div>
       </div>
       <div class="px-4 py-3 text-center border-r border-[#333]">
-        <div class="font-black text-lg text-green-400">{{ $freeShippers??0 }} rảnh</div>
+        <div class="font-black text-lg text-green-400">{{ $freeShippers }} rảnh</div>
         <div class="text-gray-500 text-[10px]">Shipper</div>
       </div>
       <div class="px-4 py-3 text-center">
-        <div class="font-black text-lg text-blue-400">{{ $todayCount??47 }}</div>
+        <div class="font-black text-lg text-blue-400">{{ $todayCount }}</div>
         <div class="text-gray-500 text-[10px]">Hôm nay</div>
       </div>
     </div>
 
-    {{-- Mobile: map toggle --}}
+    {{-- Mobile map toggle --}}
     <div class="lg:hidden px-4 py-2 border-b border-[#333]">
       <button onclick="toggleMap()" class="w-full text-xs font-bold text-gray-400 hover:text-white py-1.5 flex items-center justify-center gap-2">
         🗺️ Xem bản đồ
       </button>
     </div>
-
-    {{-- Mobile map (collapsible) --}}
     <div id="mobile-map" class="lg:hidden hidden h-48 relative bg-[#111] border-b border-[#333]">
       <div class="absolute inset-0 opacity-20">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs><pattern id="grid2" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#333" stroke-width="0.5"/></pattern></defs>
           <rect width="100%" height="100%" fill="url(#grid2)"/>
-          <line x1="0" y1="100" x2="100%" y2="100" stroke="#555" stroke-width="2"/>
-          <line x1="150" y1="0" x2="150" y2="100%" stroke="#555" stroke-width="2"/>
         </svg>
       </div>
       <div class="absolute" style="left:55%;top:50%">
@@ -85,44 +86,55 @@
 
     {{-- Order list --}}
     <div class="flex-1 overflow-y-auto">
-      @foreach($orders ?? [] as $order)
+      @forelse($orders as $order)
       @php
-        $cfg = ['ready'=>['label'=>'Chờ giao','color'=>'bg-yellow-500 text-black'],'picking'=>['label'=>'Đang lấy','color'=>'bg-orange-500 text-white'],'delivering'=>['label'=>'Đang giao','color'=>'bg-blue-500 text-white'],'delivered'=>['label'=>'Đã giao','color'=>'bg-green-500 text-white']][$order['status']] ?? ['label'=>'?','color'=>'bg-gray-500 text-white'];
+        $cfg = match($order->status) {
+          'ready'      => ['label' => 'Chờ giao',  'color' => 'bg-yellow-500 text-black'],
+          'delivering' => ['label' => 'Đang giao', 'color' => 'bg-blue-500 text-white'],
+          default      => ['label' => $order->status, 'color' => 'bg-gray-500 text-white'],
+        };
       @endphp
-      <div class="border-b border-[#222] p-4 hover:bg-[#1D1D1D] cursor-pointer transition-all" onclick="toggleOrder('{{ $order['id'] }}')">
+      <div class="border-b border-[#222] p-4 hover:bg-[#1D1D1D] cursor-pointer transition-all" onclick="toggleOrder({{ $order->id }})">
         <div class="flex items-start gap-3">
           <div class="w-8 h-8 bg-[#FF6B35] rounded-xl flex items-center justify-center flex-shrink-0 text-sm">📦</div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-white font-black text-sm">{{ $order['id'] }}</span>
+              <span class="text-white font-black text-sm">{{ $order->order_number }}</span>
               <span class="text-[10px] font-black px-2 py-0.5 rounded-full {{ $cfg['color'] }}">{{ $cfg['label'] }}</span>
             </div>
-            <div class="text-gray-400 text-xs truncate">{{ $order['customer'] }}</div>
-            <div class="text-gray-500 text-[10px] mt-0.5 truncate">📍 {{ $order['address'] }}</div>
+            <div class="text-gray-400 text-xs truncate">{{ $order->user?->name ?? 'Khách' }}</div>
+            <div class="text-gray-500 text-[10px] mt-0.5 truncate">📍 {{ $order->delivery_address ?? 'Không có địa chỉ' }}</div>
             <div class="flex items-center justify-between mt-2 text-xs text-gray-400">
-              <span>🚚 {{ $order['shipper'] ?? 'Chưa phân công' }}</span>
-              <span>⏱ {{ $order['eta'] }}</span>
+              <span>🚚 {{ $order->shipper?->name ?? 'Chưa phân công' }}</span>
+              <span>⏱ {{ $order->estimated_eta ? \Carbon\Carbon::parse($order->estimated_eta)->format('H:i') : '--:--' }}</span>
             </div>
           </div>
         </div>
-        <div id="order-{{ $order['id'] }}" class="mt-3 pt-3 border-t border-[#333] space-y-2 hidden">
+        <div id="order-{{ $order->id }}" class="mt-3 pt-3 border-t border-[#333] space-y-2 hidden">
           <div class="flex gap-2">
-            @if(!$order['shipper'])
-            <button onclick="openAssign('{{ $order['id'] }}')" class="flex-1 text-xs font-bold bg-[#FFD23F] text-[#1C1C1C] py-2 rounded-xl border border-[#444] flex items-center justify-center gap-1">
+            @if(!$order->shipper_id)
+            <button onclick="openAssign({{ $order->id }})" class="flex-1 text-xs font-bold bg-[#FFD23F] text-[#1C1C1C] py-2 rounded-xl border border-[#444] flex items-center justify-center gap-1">
               🚚 Phân shipper
             </button>
             @endif
-            <form action="{{ route('admin.dispatch.update', $order['id']) }}" method="POST" class="flex-1">
+            <form action="{{ route('admin.dispatch.update', $order->id) }}" method="POST" class="flex-1">
               @csrf @method('PATCH')
               <button type="submit" class="w-full text-xs font-bold bg-[#FF6B35] text-white py-2 rounded-xl flex items-center justify-center gap-1">✓ Cập nhật</button>
             </form>
           </div>
-          @if($order['shipper'] && ($order['shipperPhone']??null))
-          <a href="tel:{{ $order['shipperPhone'] }}" class="flex items-center gap-2 text-xs text-blue-400">📞 Gọi {{ $order['shipper'] }}: {{ $order['shipperPhone'] }}</a>
+          @if($order->shipper)
+          <a href="tel:{{ $order->shipper->phone }}" class="flex items-center gap-2 text-xs text-blue-400">
+            📞 Gọi {{ $order->shipper->name }}: {{ $order->shipper->phone }}
+          </a>
           @endif
         </div>
       </div>
-      @endforeach
+      @empty
+      <div class="flex flex-col items-center justify-center h-48 text-gray-500">
+        <span class="text-4xl mb-2">📭</span>
+        <p class="text-sm">Không có đơn nào đang giao</p>
+      </div>
+      @endforelse
     </div>
   </div>
 
@@ -131,18 +143,22 @@
     <div class="bg-[#1A1A1A] border-2 border-[#333] rounded-2xl p-5 w-full max-w-sm shadow-2xl">
       <h3 class="text-white font-black text-lg mb-4">Phân công Shipper</h3>
       <div class="space-y-2 mb-4">
-        @foreach($shippers ?? [] as $s)
+        @foreach($shippers as $s)
         <form action="{{ route('admin.dispatch.assign') }}" method="POST">
           @csrf
-          <input type="hidden" name="order_id" id="assign-order-id" value="" />
-          <input type="hidden" name="shipper_id" value="{{ $s['id'] }}" />
-          <button type="submit" class="w-full flex items-center gap-3 p-3 rounded-xl border transition-all {{ $s['status']==='free' ? 'border-green-500/50 hover:border-green-500 hover:bg-green-900/20' : 'border-[#333] opacity-60' }}">
-            <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-white {{ $s['status']==='free'?'bg-green-500':'bg-gray-600' }}">{{ $s['avatar'] }}</div>
-            <div class="text-left flex-1">
-              <div class="text-white text-sm font-bold">{{ $s['name'] }}</div>
-              <div class="text-gray-400 text-xs">{{ $s['status']==='free' ? 'Rảnh · '.$s['distance'] : 'Đang giao '.$s['orders'].' đơn' }}</div>
+          <input type="hidden" name="order_id" class="assign-order-id" value="" />
+          <input type="hidden" name="shipper_id" value="{{ $s->id }}" />
+          <button type="submit" class="w-full flex items-center gap-3 p-3 rounded-xl border transition-all {{ $s->isFree() ? 'border-green-500/50 hover:border-green-500 hover:bg-green-900/20' : 'border-[#333] opacity-60' }}">
+            <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-white {{ $s->isFree() ? 'bg-green-500' : 'bg-gray-600' }}">
+              {{ strtoupper(substr($s->name, 0, 1)) }}
             </div>
-            @if($s['status']==='free')<span class="text-green-400 text-xs font-bold">Chọn</span>@endif
+            <div class="text-left flex-1">
+              <div class="text-white text-sm font-bold">{{ $s->name }}</div>
+              <div class="text-gray-400 text-xs">
+                {{ $s->isFree() ? 'Rảnh · ' . $s->phone : 'Đang giao ' . $s->active_order_count . ' đơn' }}
+              </div>
+            </div>
+            @if($s->isFree())<span class="text-green-400 text-xs font-bold">Chọn</span>@endif
           </button>
         </form>
         @endforeach
@@ -158,7 +174,7 @@
 <script>
 function toggleOrder(id) { document.getElementById('order-' + id).classList.toggle('hidden'); }
 function openAssign(orderId) {
-  document.querySelectorAll('[id="assign-order-id"]').forEach(el => el.value = orderId);
+  document.querySelectorAll('.assign-order-id').forEach(el => el.value = orderId);
   const m = document.getElementById('assign-modal');
   m.classList.remove('hidden'); m.classList.add('flex');
 }

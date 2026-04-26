@@ -7,10 +7,14 @@ use App\Models\Branch;
 use App\Models\Category;
 use App\Models\Combo;
 use App\Models\ComboItem;
+use App\Models\InventoryItem;
 use App\Models\Product;
 use App\Models\ProductOption;
 use App\Models\ProductOptionValue;
+use App\Models\Shipper;
+use App\Models\SmartPrepLog;
 use App\Models\User;
+use App\Models\Voucher;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -140,6 +144,54 @@ class DatabaseSeeder extends Seeder
                     ]);
                 }
             }
+        }
+
+        // ── Vouchers ───────────────────────────────────────────
+        Voucher::insert([
+            ['code' => 'WELCOME20', 'type' => 'percent', 'value' => 20, 'min_order' => 50000,  'max_discount' => 30000, 'max_uses' => 100, 'used_count' => 12, 'is_active' => true, 'expires_at' => now()->addDays(30), 'created_at' => now(), 'updated_at' => now()],
+            ['code' => 'FREESHIP',  'type' => 'shipping','value' => 0,  'min_order' => 80000,  'max_discount' => 25000, 'max_uses' => 50,  'used_count' => 8,  'is_active' => true, 'expires_at' => now()->addDays(15), 'created_at' => now(), 'updated_at' => now()],
+            ['code' => 'FLAT30K',   'type' => 'flat',    'value' => 30000, 'min_order' => 100000, 'max_discount' => 30000, 'max_uses' => 30,  'used_count' => 30, 'is_active' => false,'expires_at' => now()->subDay(),    'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        // ── Shippers ───────────────────────────────────────────
+        Shipper::insert([
+            ['name' => 'Nguyễn Văn A', 'phone' => '0911111111', 'status' => 'free', 'active_order_count' => 0, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Trần Thị B',   'phone' => '0922222222', 'status' => 'busy', 'active_order_count' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Lê Văn C',     'phone' => '0933333333', 'status' => 'free', 'active_order_count' => 0, 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        // ── Inventory Items ────────────────────────────────────
+        $inventoryItems = [
+            ['branch_id' => 1, 'sku' => 'INV-001', 'name' => 'Thịt bò',      'unit' => 'kg',  'current_qty' => 2,  'min_threshold' => 5,  'created_at' => now(), 'updated_at' => now()],
+            ['branch_id' => 1, 'sku' => 'INV-002', 'name' => 'Bánh phở',     'unit' => 'kg',  'current_qty' => 8,  'min_threshold' => 10, 'created_at' => now(), 'updated_at' => now()],
+            ['branch_id' => 1, 'sku' => 'INV-003', 'name' => 'Gà nguyên con', 'unit' => 'con', 'current_qty' => 3,  'min_threshold' => 8,  'created_at' => now(), 'updated_at' => now()],
+            ['branch_id' => 1, 'sku' => 'INV-004', 'name' => 'Trà sữa base',  'unit' => 'lít', 'current_qty' => 15, 'min_threshold' => 10, 'created_at' => now(), 'updated_at' => now()],
+            ['branch_id' => 1, 'sku' => 'INV-005', 'name' => 'Rau sống',      'unit' => 'kg',  'current_qty' => 1,  'min_threshold' => 3,  'created_at' => now(), 'updated_at' => now()],
+        ];
+        foreach ($inventoryItems as $inv) {
+            InventoryItem::create($inv);
+        }
+
+        // ── SmartPrep Logs ─────────────────────────────────────
+        $invItems = InventoryItem::all();
+        $smartPreps = [
+            ['urgency' => 'critical', 'item_name' => 'Thịt bò',       'predicted_qty' => 15, 'current_qty' => 2,  'action' => 'Đặt thêm 13kg ngay'],
+            ['urgency' => 'high',     'item_name' => 'Gà nguyên con',  'predicted_qty' => 12, 'current_qty' => 3,  'action' => 'Chuẩn bị thêm 9 con'],
+            ['urgency' => 'high',     'item_name' => 'Bánh phở',       'predicted_qty' => 20, 'current_qty' => 8,  'action' => 'Đặt thêm 12kg'],
+            ['urgency' => 'medium',   'item_name' => 'Rau sống',       'predicted_qty' => 5,  'current_qty' => 1,  'action' => 'Mua thêm 4kg'],
+        ];
+        foreach ($smartPreps as $sp) {
+            $inv = $invItems->firstWhere('name', $sp['item_name']);
+            SmartPrepLog::create([
+                'inventory_item_id'  => $inv?->id ?? $invItems->first()->id,
+                'branch_id'          => 1,
+                'urgency'            => $sp['urgency'],
+                'predicted_qty'      => $sp['predicted_qty'],
+                'action_text'        => $sp['action'],
+                'weather_condition'  => 'rainy',
+                'temperature'        => 24,
+                'delivery_boost_pct' => 85,
+            ]);
         }
     }
 }

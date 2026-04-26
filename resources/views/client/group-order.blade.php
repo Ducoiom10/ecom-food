@@ -16,23 +16,13 @@
     <form action="{{ route('client.group-order.create') }}" method="POST" class="bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[4px_4px_0px_#1C1C1C] p-5 space-y-4">
       @csrf
       <div>
-        <label class="text-xs font-black text-[#1C1C1C] mb-1 block uppercase tracking-wide">Tên của bạn</label>
-        <input type="text" name="host_name" placeholder="Nhập tên để mọi người nhận ra..."
-          class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-[#FF6B35] focus:shadow-[2px_2px_0px_#FF6B35] transition-all" required />
-      </div>
-
-      <div>
-        <label class="text-xs font-black text-[#1C1C1C] mb-1 block uppercase tracking-wide">Mã phòng của bạn</label>
-        <div class="flex gap-2">
-          <div class="flex-1 bg-[#1C1C1C] text-[#FFD23F] font-black text-center py-3 rounded-xl text-lg tracking-widest border-2 border-[#1C1C1C]" id="room-code">
-            {{ $roomCode ?? 'PHOBO123' }}
-          </div>
-          <button type="button" onclick="copyLink()" class="px-4 py-3 rounded-xl border-2 border-[#1C1C1C] font-bold text-sm bg-[#FFD23F] text-[#1C1C1C] shadow-[2px_2px_0px_#1C1C1C]" id="copy-btn">
-            📋 Copy link
-          </button>
-        </div>
-        <input type="hidden" name="room_code" value="{{ $roomCode ?? 'PHOBO123' }}" />
-        <p class="text-xs text-gray-400 mt-1.5">Gửi link này cho đồng nghiệp vào chọn món cùng</p>
+        <label class="text-xs font-black text-[#1C1C1C] mb-1 block uppercase tracking-wide">Chi nhánh</label>
+        <select name="branch_id" required
+          class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-3 text-sm font-medium outline-none focus:border-[#FF6B35] transition-all">
+          @foreach($branches as $branch)
+          <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+          @endforeach
+        </select>
       </div>
 
       <button type="submit" class="w-full bg-[#FF6B35] text-white font-black py-3.5 rounded-xl border-2 border-[#1C1C1C] shadow-[4px_4px_0px_#1C1C1C] hover:shadow-[2px_2px_0px_#1C1C1C] hover:translate-x-[1px] hover:translate-y-[1px] transition-all flex items-center justify-center gap-2 text-base">
