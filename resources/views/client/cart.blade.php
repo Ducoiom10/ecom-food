@@ -225,12 +225,14 @@
 
 @push('scripts')
 <script>
+const SUBTOTAL = {{ $subtotal ?? 0 }};
+
 function addUpsell(id) {
   fetch('/cart/add', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
     body: JSON.stringify({ product_id: id, quantity: 1 })
-  }).then(() => { document.getElementById('upsell-widget')?.remove(); window.location.reload(); });
+  }).then(() => { document.getElementById('upsell-widget')?.remove(); if (typeof showToast === 'function') showToast('Đã thêm vào giỏ hàng 🛒', 'success'); window.location.reload(); });
 }
 
 

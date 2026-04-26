@@ -37,14 +37,13 @@
           <button type="button" onclick="togglePwd('pwd1')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">👁</button>
         </div>
         @error('password')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
-        {{-- Strength indicator --}}
-        <div class="flex gap-1 mt-2" id="strength-bars">
+        <div class="flex gap-1 mt-2">
           <div class="flex-1 h-1.5 rounded-full bg-gray-200" id="bar1"></div>
           <div class="flex-1 h-1.5 rounded-full bg-gray-200" id="bar2"></div>
           <div class="flex-1 h-1.5 rounded-full bg-gray-200" id="bar3"></div>
           <div class="flex-1 h-1.5 rounded-full bg-gray-200" id="bar4"></div>
         </div>
-        <p class="text-xs text-gray-400 mt-1" id="strength-label">Tối thiểu 8 ký tự</p>
+        <p class="text-xs text-gray-400 mt-1" id="strength-label">Tối thiểu 6 ký tự</p>
       </div>
 
       <div>
@@ -76,15 +75,14 @@ document.getElementById('pwd1').addEventListener('input', function() {
   const colors = ['bg-red-400','bg-orange-400','bg-yellow-400','bg-green-500'];
   const labels = ['Yếu','Trung bình','Khá','Mạnh'];
   let score = 0;
-  if (val.length >= 8) score++;
+  if (val.length >= 6) score++;
   if (/[A-Z]/.test(val)) score++;
   if (/[0-9]/.test(val)) score++;
   if (/[^A-Za-z0-9]/.test(val)) score++;
   for (let i = 1; i <= 4; i++) {
-    const bar = document.getElementById('bar' + i);
-    bar.className = 'flex-1 h-1.5 rounded-full ' + (i <= score ? colors[score-1] : 'bg-gray-200');
+    document.getElementById('bar' + i).className = 'flex-1 h-1.5 rounded-full ' + (i <= score ? colors[score-1] : 'bg-gray-200');
   }
-  document.getElementById('strength-label').textContent = val.length === 0 ? 'Tối thiểu 8 ký tự' : labels[score-1] || 'Yếu';
+  document.getElementById('strength-label').textContent = val.length === 0 ? 'Tối thiểu 6 ký tự' : (labels[score-1] || 'Yếu');
 });
 </script>
 @endpush

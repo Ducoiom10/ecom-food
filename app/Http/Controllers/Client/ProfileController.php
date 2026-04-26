@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Client;
 
+use App\Http\Controllers\Controller;
 use App\Models\LoyaltyChallenge;
 use App\Models\UserChallengeProgress;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
-        $challenges = LoyaltyChallenge::where('is_active', true)->get();
+        $challenges  = LoyaltyChallenge::where('is_active', true)->get();
         $progressMap = UserChallengeProgress::where('user_id', $user->id)
             ->get()->keyBy('challenge_id');
 
@@ -29,7 +30,7 @@ class ProfileController extends Controller
 
     public function edit()
     {
-        return view('auth.profile-edit', ['user' => auth()->user()]);
+        return view('client.profile-edit', ['user' => auth()->user()]);
     }
 
     public function update(Request $request)
@@ -48,7 +49,7 @@ class ProfileController extends Controller
 
     public function showChangePassword()
     {
-        return view('auth.change-password');
+        return view('client.change-password');
     }
 
     public function changePassword(Request $request)

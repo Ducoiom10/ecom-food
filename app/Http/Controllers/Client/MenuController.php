@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Product;
 
 class MenuController extends Controller
 {
     public function index()
     {
+        $categories = Category::orderBy('priority')->get();
         $query = Product::with('category')->where('is_active', true);
 
         if ($search = request('search')) {
@@ -29,6 +31,6 @@ class MenuController extends Controller
 
         $menuItems = $query->get();
 
-        return view('client.menu', compact('menuItems'));
+        return view('client.menu', compact('menuItems', 'categories'));
     }
 }

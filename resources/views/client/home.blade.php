@@ -280,7 +280,9 @@ function addToCart(id) {
   fetch('/cart/add', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-    body: JSON.stringify({ id, quantity: 1 })
+    body: JSON.stringify({ product_id: id, quantity: 1 })
+  }).then(r => r.json()).then(() => {
+    if (typeof showToast === 'function') showToast('Đã thêm vào giỏ hàng 🛒', 'success');
   });
 }
 </script>

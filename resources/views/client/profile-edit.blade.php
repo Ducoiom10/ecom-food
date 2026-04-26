@@ -10,7 +10,6 @@
     <h1 class="font-black text-[#1C1C1C] text-xl">Chỉnh sửa hồ sơ</h1>
   </div>
 
-  {{-- Avatar --}}
   <div class="bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[4px_4px_0px_#1C1C1C] p-6 mb-4">
     <div class="flex items-center gap-4 mb-6">
       <div class="w-20 h-20 bg-[#FF6B35] border-2 border-[#1C1C1C] rounded-2xl flex items-center justify-center text-4xl shadow-[3px_3px_0px_#1C1C1C]">👤</div>
@@ -37,8 +36,8 @@
         </div>
         <div>
           <label class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">Số điện thoại</label>
-          <input type="tel" name="phone" value="{{ $user->phone }}"
-            class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#FF6B35] transition-all" />
+          <input type="tel" value="{{ $user->phone }}" disabled
+            class="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-gray-50 text-gray-400 cursor-not-allowed" />
         </div>
       </div>
 
@@ -46,18 +45,6 @@
         <label class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">Email</label>
         <input type="email" name="email" value="{{ $user->email }}"
           class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#FF6B35] transition-all" />
-      </div>
-
-      <div>
-        <label class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">Ngày sinh</label>
-        <input type="date" name="birthday"
-          class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#FF6B35] transition-all" />
-      </div>
-
-      <div>
-        <label class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">Địa chỉ mặc định</label>
-        <textarea name="address" rows="2" placeholder="123 Nguyễn Huệ, Q.1, TP.HCM"
-          class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#FF6B35] transition-all resize-none"></textarea>
       </div>
 
       <div class="flex gap-3 pt-2">
@@ -73,7 +60,6 @@
     </form>
   </div>
 
-  {{-- Change password link --}}
   <a href="{{ route('client.profile.password') }}"
     class="block bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[3px_3px_0px_#1C1C1C] px-5 py-4 flex items-center gap-3 hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
     <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center text-xl">🔒</div>

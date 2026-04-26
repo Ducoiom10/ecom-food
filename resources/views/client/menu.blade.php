@@ -57,11 +57,16 @@
 
   {{-- Categories --}}
   <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-2 mb-5 lg:flex-wrap lg:overflow-visible">
-    @foreach([['id'=>'all','label'=>'Tất cả','emoji'=>'🍽️'],['id'=>'noodles','label'=>'Mì & Phở','emoji'=>'🍜'],['id'=>'rice','label'=>'Cơm','emoji'=>'🍚'],['id'=>'snacks','label'=>'Ăn vặt','emoji'=>'🍗'],['id'=>'drinks','label'=>'Đồ uống','emoji'=>'🧋']] as $cat)
-    <a href="{{ route('client.menu', array_merge(request()->except('category'), ['category' => $cat['id']])) }}"
+    <a href="{{ route('client.menu', array_merge(request()->except('category'), ['category' => 'all'])) }}"
       class="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 border-[#1C1C1C] text-xs lg:text-sm font-bold transition-all
-             {{ request('category','all') === $cat['id'] ? 'bg-[#FF6B35] text-white shadow-[2px_2px_0px_#1C1C1C]' : 'bg-white text-[#1C1C1C] shadow-[2px_2px_0px_#1C1C1C] hover:shadow-none' }}">
-      {{ $cat['emoji'] }} {{ $cat['label'] }}
+             {{ request('category','all') === 'all' ? 'bg-[#FF6B35] text-white shadow-[2px_2px_0px_#1C1C1C]' : 'bg-white text-[#1C1C1C] shadow-[2px_2px_0px_#1C1C1C] hover:shadow-none' }}">
+      🍽️ Tất cả
+    </a>
+    @foreach($categories as $cat)
+    <a href="{{ route('client.menu', array_merge(request()->except('category'), ['category' => $cat->slug])) }}"
+      class="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 border-[#1C1C1C] text-xs lg:text-sm font-bold transition-all
+             {{ request('category') === $cat->slug ? 'bg-[#FF6B35] text-white shadow-[2px_2px_0px_#1C1C1C]' : 'bg-white text-[#1C1C1C] shadow-[2px_2px_0px_#1C1C1C] hover:shadow-none' }}">
+      {{ $cat->icon }} {{ $cat->name }}
     </a>
     @endforeach
   </div>
@@ -144,6 +149,8 @@ function addToCart(id) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
     body: JSON.stringify({ product_id: id, quantity: 1 })
+  }).then(r => r.json()).then(d => {
+    if (typeof showToast === 'function') showToast('Đã thêm vào giỏ hàng 🛒', 'success');
   });
 }
 function removeFromCart(id) {

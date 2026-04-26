@@ -1,18 +1,19 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Client\CartController;
+use App\Http\Controllers\Client\GroupOrderController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\MenuController;
-use App\Http\Controllers\Client\CartController;
-use App\Http\Controllers\Client\ProductController;
 use App\Http\Controllers\Client\OrderController;
-use App\Http\Controllers\Client\GroupOrderController;
+use App\Http\Controllers\Client\ProductController;
+use App\Http\Controllers\Client\ProfileController;
+use App\Http\Controllers\Admin\BranchController;
+use App\Http\Controllers\Admin\DispatchController;
 use App\Http\Controllers\Admin\KdsController;
 use App\Http\Controllers\Admin\SmartPrepController;
-use App\Http\Controllers\Admin\DispatchController;
-use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\SuperAdminController;
+use Illuminate\Support\Facades\Route;
 
 // ===================== AUTH ROUTES =====================
 Route::middleware('guest')->group(function () {
@@ -28,25 +29,29 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 
 // ===================== CLIENT ROUTES =====================
 Route::prefix('')->name('client.')->group(function () {
-    Route::get('/',        [HomeController::class, 'index'])->name('home');
-    Route::get('/menu',    [MenuController::class, 'index'])->name('menu');
+    Route::get('/',             [HomeController::class, 'index'])->name('home');
+    Route::get('/menu',         [MenuController::class, 'index'])->name('menu');
     Route::get('/product/{id}', [ProductController::class, 'show'])->name('product');
 
-    // Yêu cầu đăng nhập
     Route::middleware('auth')->group(function () {
-        Route::get('/cart',              [CartController::class, 'index'])->name('cart');
-        Route::post('/cart/add',         [CartController::class, 'add'])->name('cart.add');
-        Route::delete('/cart/{id}',      [CartController::class, 'remove'])->name('cart.remove');
-        Route::patch('/cart/{id}',       [CartController::class, 'updateQty'])->name('cart.update');
-        Route::post('/cart/voucher',     [CartController::class, 'applyVoucher'])->name('cart.voucher');
-        Route::get('/checkout',          [CartController::class, 'checkout'])->name('checkout');
-        Route::post('/checkout',         [CartController::class, 'placeOrder'])->name('checkout.post');
+        // Cart
+        Route::get('/cart',          [CartController::class, 'index'])->name('cart');
+        Route::post('/cart/add',     [CartController::class, 'add'])->name('cart.add');
+        Route::patch('/cart/{id}',   [CartController::class, 'updateQty'])->name('cart.update');
+        Route::delete('/cart/{id}',  [CartController::class, 'remove'])->name('cart.remove');
+        Route::post('/cart/voucher', [CartController::class, 'applyVoucher'])->name('cart.voucher');
+        Route::get('/checkout',      [CartController::class, 'checkout'])->name('checkout');
+        Route::post('/checkout',     [CartController::class, 'placeOrder'])->name('checkout.post');
 
+        // Profile
         Route::get('/profile',           [ProfileController::class, 'show'])->name('profile');
         Route::get('/profile/edit',      [ProfileController::class, 'edit'])->name('profile.edit');
         Route::post('/profile/edit',     [ProfileController::class, 'update'])->name('profile.update');
         Route::get('/profile/password',  [ProfileController::class, 'showChangePassword'])->name('profile.password');
         Route::post('/profile/password', [ProfileController::class, 'changePassword'])->name('profile.password.update');
+
+        // Orders
+        Route::get('/orders/{id}', [OrderController::class, 'show'])->name('order.show');
 
         // Group Order
         Route::get('/group-order',              [GroupOrderController::class, 'index'])->name('group-order');
@@ -55,9 +60,6 @@ Route::prefix('')->name('client.')->group(function () {
         Route::get('/group-order/{code}',       [GroupOrderController::class, 'room'])->name('group-order.room');
         Route::post('/group-order/{code}/item', [GroupOrderController::class, 'addItem'])->name('group-order.item');
         Route::post('/group-order/{code}/lock', [GroupOrderController::class, 'lock'])->name('group-order.lock');
-
-        // Order tracking
-        Route::get('/orders/{id}', [OrderController::class, 'show'])->name('order.show');
 
         // Split Bill
         Route::get('/split-bill/{code}', [GroupOrderController::class, 'splitBill'])->name('split-bill');
