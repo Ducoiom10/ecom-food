@@ -13,6 +13,13 @@ class ProductController extends Controller
             ->where('is_active', true)
             ->findOrFail($id);
 
-        return view('client.product', compact('product'));
+        $related = Product::with('category')
+            ->where('is_active', true)
+            ->where('id', '!=', $id)
+            ->where('category_id', $product->category_id)
+            ->take(2)
+            ->get();
+
+        return view('client.product', compact('product', 'related'));
     }
 }

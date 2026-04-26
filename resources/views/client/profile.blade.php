@@ -77,33 +77,34 @@
 
   {{-- Loyalty tab --}}
   <div id="panel-loyalty" class="px-4 mt-4 space-y-3 hidden">
-    @foreach([
-      ['title' => 'Mua 5 đơn liên tiếp',       'points' => 50,  'progress' => 3, 'max' => 5, 'emoji' => '🎯'],
-      ['title' => 'Đặt vào giờ trưa tuần này',  'points' => 30,  'progress' => 4, 'max' => 5, 'emoji' => '☀️'],
-      ['title' => 'Thử thực đơn mới',            'points' => 20,  'progress' => 1, 'max' => 1, 'emoji' => '✨', 'completed' => true],
-      ['title' => 'Giới thiệu bạn bè',           'points' => 100, 'progress' => 0, 'max' => 1, 'emoji' => '👥'],
-    ] as $challenge)
-    <div class="bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[3px_3px_0px_#1C1C1C] p-4 {{ isset($challenge['completed']) ? 'opacity-70' : '' }}">
+    @forelse($challenges as $challenge)
+    @php $progress = $progressMap[$challenge->id] ?? null; @endphp
+    <div class="bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[3px_3px_0px_#1C1C1C] p-4 {{ $progress?->isCompleted() ? 'opacity-70' : '' }}">
       <div class="flex items-center gap-3">
-        <span class="text-2xl">{{ $challenge['emoji'] }}</span>
+        <span class="text-2xl">🎯</span>
         <div class="flex-1">
           <div class="flex items-center justify-between">
-            <span class="font-black text-[#1C1C1C] text-sm">{{ $challenge['title'] }}</span>
-            <span class="text-[#FFD23F] font-black text-sm">+{{ $challenge['points'] }} pts</span>
+            <span class="font-black text-[#1C1C1C] text-sm">{{ $challenge->title }}</span>
+            <span class="text-[#FFD23F] font-black text-sm">+{{ $challenge->points_reward }} pts</span>
           </div>
           <div class="flex items-center gap-2 mt-1.5">
             <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
-              <div class="h-full bg-[#FF6B35] rounded-full" style="width: {{ ($challenge['progress'] / $challenge['max']) * 100 }}%"></div>
+              <div class="h-full bg-[#FF6B35] rounded-full" style="width: {{ $challenge->target_count > 0 ? min(100, (($progress?->current_count ?? 0) / $challenge->target_count) * 100) : 0 }}%"></div>
             </div>
-            <span class="text-xs text-gray-500">{{ $challenge['progress'] }}/{{ $challenge['max'] }}</span>
+            <span class="text-xs text-gray-500">{{ $progress?->current_count ?? 0 }}/{{ $challenge->target_count }}</span>
           </div>
         </div>
       </div>
-      @if(isset($challenge['completed']))
+      @if($progress?->isCompleted())
       <div class="mt-2 bg-green-50 border border-green-200 rounded-xl px-3 py-1.5 text-xs text-green-600 font-bold text-center">✓ Đã hoàn thành!</div>
       @endif
     </div>
-    @endforeach
+    @empty
+    <div class="text-center py-8 text-gray-400">
+      <div class="text-4xl mb-2">⭐</div>
+      <p class="text-sm">Chưa có thử thách nào.</p>
+    </div>
+    @endforelse
   </div>
 
   {{-- Settings --}}

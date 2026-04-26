@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LoyaltyChallenge;
+use App\Models\UserChallengeProgress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -12,14 +14,16 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
+        $challenges = LoyaltyChallenge::where('is_active', true)->get();
+        $progressMap = UserChallengeProgress::where('user_id', $user->id)
+            ->get()->keyBy('challenge_id');
+
         return view('client.profile', [
             'user'         => $user,
             'snackPoints'  => $user->snack_points,
-            'orderHistory' => $user->orders()
-                ->with('items.product')
-                ->latest()
-                ->take(10)
-                ->get(),
+            'orderHistory' => $user->orders()->with('items.product')->latest()->take(10)->get(),
+            'challenges'   => $challenges,
+            'progressMap'  => $progressMap,
         ]);
     }
 
