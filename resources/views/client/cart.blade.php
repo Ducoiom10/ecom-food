@@ -83,7 +83,7 @@
               @endif
             </div>
             <div class="flex items-center justify-between mt-2">
-              <span class="font-black text-[#FF6B35] text-base" id="item-price-{{ $item['id'] }}">{{ number_format($item['price'] * $item['quantity']) }}đ</span>
+              <span class="font-black text-[#FF6B35] text-base" id="item-price-{{ $item['id'] }}" data-price="{{ $item['price'] }}">{{ number_format($item['price'] * $item['quantity']) }}đ</span>
               <div class="flex items-center gap-2">
                 <button type="button" onclick="updateQty('{{ $item['id'] }}', -1, {{ $item['price'] }})" class="w-8 h-8 rounded-lg border-2 border-[#1C1C1C] bg-white flex items-center justify-center font-black shadow-[1px_1px_0px_#1C1C1C]">−</button>
                 <span class="font-black text-[#1C1C1C] text-sm w-6 text-center" id="qty-{{ $item['id'] }}">{{ $item['quantity'] }}</span>
@@ -303,6 +303,20 @@ function updateQty(id, delta, price) {
   let qty = Math.max(1, parseInt(el.textContent) + delta);
   el.textContent = qty;
   document.getElementById('item-price-' + id).textContent = (price * qty).toLocaleString('vi-VN') + 'đ';
+  // Sync to server
+  fetch(`/cart/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+    body: JSON.stringify({ quantity: qty })
+  });
+  // Recalc subtotal
+  let newSubtotal = 0;
+  document.querySelectorAll('[id^="cart-item-"]').forEach(row => {
+    const itemId = row.id.replace('cart-item-', '');
+    const q = parseInt(document.getElementById('qty-' + itemId)?.textContent || 0);
+    const p = parseInt(document.getElementById('item-price-' + itemId)?.dataset.price || 0);
+    newSubtotal += q * p;
+  });
 }
 
 // Sync delivery address trước khi submit

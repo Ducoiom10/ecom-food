@@ -61,9 +61,9 @@
       </div>
       <div class="flex items-center justify-between">
         <span class="font-black text-[#FF6B35]">{{ number_format($order->grand_total) }}đ</span>
-        <button class="flex items-center gap-1.5 bg-[#FFD23F] text-[#1C1C1C] text-xs font-black px-3 py-2 rounded-xl border-2 border-[#1C1C1C] shadow-[2px_2px_0px_#1C1C1C]">
-          🔄 Đặt lại
-        </button>
+        <a href="{{ route('client.order.show', $order->id) }}" class="flex items-center gap-1.5 bg-[#FFD23F] text-[#1C1C1C] text-xs font-black px-3 py-2 rounded-xl border-2 border-[#1C1C1C] shadow-[2px_2px_0px_#1C1C1C]">
+          📍 Theo dõi
+        </a>
       </div>
     </div>
     @empty

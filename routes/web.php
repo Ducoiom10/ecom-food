@@ -6,13 +6,13 @@ use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\MenuController;
 use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\ProductController;
+use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\Client\GroupOrderController;
 use App\Http\Controllers\Admin\KdsController;
 use App\Http\Controllers\Admin\SmartPrepController;
 use App\Http\Controllers\Admin\DispatchController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\SuperAdminController;
-use Illuminate\Support\Facades\Route;
 
 // ===================== AUTH ROUTES =====================
 Route::middleware('guest')->group(function () {
@@ -37,6 +37,7 @@ Route::prefix('')->name('client.')->group(function () {
         Route::get('/cart',              [CartController::class, 'index'])->name('cart');
         Route::post('/cart/add',         [CartController::class, 'add'])->name('cart.add');
         Route::delete('/cart/{id}',      [CartController::class, 'remove'])->name('cart.remove');
+        Route::patch('/cart/{id}',       [CartController::class, 'updateQty'])->name('cart.update');
         Route::post('/cart/voucher',     [CartController::class, 'applyVoucher'])->name('cart.voucher');
         Route::get('/checkout',          [CartController::class, 'checkout'])->name('checkout');
         Route::post('/checkout',         [CartController::class, 'placeOrder'])->name('checkout.post');
@@ -54,6 +55,9 @@ Route::prefix('')->name('client.')->group(function () {
         Route::get('/group-order/{code}',       [GroupOrderController::class, 'room'])->name('group-order.room');
         Route::post('/group-order/{code}/item', [GroupOrderController::class, 'addItem'])->name('group-order.item');
         Route::post('/group-order/{code}/lock', [GroupOrderController::class, 'lock'])->name('group-order.lock');
+
+        // Order tracking
+        Route::get('/orders/{id}', [OrderController::class, 'show'])->name('order.show');
 
         // Split Bill
         Route::get('/split-bill/{code}', [GroupOrderController::class, 'splitBill'])->name('split-bill');

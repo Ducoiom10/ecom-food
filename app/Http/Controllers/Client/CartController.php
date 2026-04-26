@@ -71,6 +71,17 @@ class CartController extends Controller
         return back();
     }
 
+    public function updateQty(Request $request, string $id)
+    {
+        $request->validate(['quantity' => 'required|integer|min:1|max:20']);
+        $cart = session('cart', []);
+        if (isset($cart[$id])) {
+            $cart[$id]['quantity'] = $request->quantity;
+            session(['cart' => $cart]);
+        }
+        return response()->json(['ok' => true]);
+    }
+
     public function applyVoucher(Request $request)
     {
         $request->validate(['code' => 'required|string']);
@@ -136,7 +147,8 @@ class CartController extends Controller
 
         $grandTotal = max(0, $subtotal + $shippingFee - $discountAmount);
 
-        \DB::transaction(function () use ($request, $cart, $subtotal, $shippingFee, $discountAmount, $grandTotal, $voucherId, $appliedVoucher) {
+        $order = null;
+        \DB::transaction(function () use ($request, $cart, $subtotal, $shippingFee, $discountAmount, $grandTotal, $voucherId, $appliedVoucher, &$order) {
             // Tạo order
             $branchCode = \App\Models\Branch::find($request->branch_id)->name;
             $branchCode = strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $branchCode), 0, 2));
@@ -182,6 +194,6 @@ class CartController extends Controller
 
         session()->forget(['cart', 'applied_voucher']);
 
-        return redirect()->route('client.profile')->with('success', 'Đặt hàng thành công! 🎉');
+        return redirect()->route('client.order.show', $order->id)->with('success', 'Đặt hàng thành công! 🎉');
     }
 }
