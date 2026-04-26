@@ -44,21 +44,21 @@
     <form id="login-form" action="{{ route('login.post') }}" method="POST" class="space-y-5" novalidate>
       @csrf
 
-      {{-- Email --}}
+      {{-- Phone --}}
       <div>
-        <label for="email" class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">
-          Email <span class="text-red-500">*</span>
+        <label for="phone" class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">
+          Số điện thoại <span class="text-red-500">*</span>
         </label>
         <div class="relative">
-          <input type="email" id="email" name="email" value="{{ old('email') }}"
-            placeholder="minhtuan@email.com" autocomplete="email"
+          <input type="tel" id="phone" name="phone" value="{{ old('phone') }}"
+            placeholder="0901 234 567" autocomplete="tel"
             class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-3 text-sm outline-none transition-all pr-10
-                   @error('email') input-invalid @enderror"
-            oninput="validateEmail(this)" onblur="validateEmail(this)" />
-          <span id="email-icon" class="absolute right-3 top-1/2 -translate-y-1/2 text-base hidden"></span>
+                   @error('phone') input-invalid @enderror"
+            oninput="validatePhone(this)" onblur="validatePhone(this)" />
+          <span id="phone-icon" class="absolute right-3 top-1/2 -translate-y-1/2 text-base hidden"></span>
         </div>
-        <p id="email-error" class="text-red-600 text-xs mt-1 font-medium hidden">
-          @error('email'){{ $message }}@enderror
+        <p id="phone-error" class="text-red-600 text-xs mt-1 font-medium hidden">
+          @error('phone'){{ $message }}@enderror
         </p>
       </div>
 
@@ -167,10 +167,10 @@ function setInputState(input, iconEl, errorEl, isValid, errorMsg) {
   }
 }
 
-function validateEmail(input) {
-  const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value);
-  setInputState(input, document.getElementById('email-icon'), document.getElementById('email-error'),
-    ok, 'Email không hợp lệ');
+function validatePhone(input) {
+  const ok = /^(0|\+84)[0-9]{8,9}$/.test(input.value.replace(/\s/g,''));
+  setInputState(input, document.getElementById('phone-icon'), document.getElementById('phone-error'),
+    ok, 'Số điện thoại không hợp lệ');
 }
 
 function validatePassword(input) {
@@ -180,11 +180,11 @@ function validatePassword(input) {
 }
 
 // Show lỗi từ Laravel ngay khi load
-@php $emailErr = $errors->first('email'); $pwdErr = $errors->first('password'); @endphp
-@if($emailErr)
-  document.getElementById('email').classList.add('input-invalid');
-  document.getElementById('email-error').textContent = '{{ $emailErr }}';
-  document.getElementById('email-error').classList.remove('hidden');
+@php $phoneErr = $errors->first('phone'); $pwdErr = $errors->first('password'); @endphp
+@if($phoneErr)
+  document.getElementById('phone').classList.add('input-invalid');
+  document.getElementById('phone-error').textContent = '{{ $phoneErr }}';
+  document.getElementById('phone-error').classList.remove('hidden');
 @endif
 @if($pwdErr)
   document.getElementById('password').classList.add('input-invalid');

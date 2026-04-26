@@ -113,28 +113,27 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-4">
           @foreach($menuItems ?? [] as $item)
           <div class="bg-white border-2 border-[#1C1C1C] rounded-2xl neo-shadow overflow-hidden hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all group">
-            <a href="{{ route('client.product', $item['id']) }}" class="block">
+            <a href="{{ route('client.product', $item->id) }}" class="block">
               <div class="relative overflow-hidden" style="padding-top: 66%">
-                <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}"
+                <img src="{{ $item->image }}" alt="{{ $item->name }}"
                   class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                @if($item['isNew'])
+                @if($item->is_new)
                 <div class="absolute top-2 left-2 bg-[#FFD23F] border border-[#1C1C1C] text-[#1C1C1C] text-[9px] font-black px-1.5 py-0.5 rounded-full">✨ NEW</div>
                 @endif
-                @if($item['isBestSeller'])
+                @if($item->is_best_seller)
                 <div class="absolute top-2 right-2 bg-[#FF6B35] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">🔥 TOP</div>
                 @endif
               </div>
               <div class="p-3">
-                <div class="font-black text-[#1C1C1C] text-sm leading-tight line-clamp-2">{{ $item['name'] }}</div>
+                <div class="font-black text-[#1C1C1C] text-sm leading-tight line-clamp-2">{{ $item->name }}</div>
                 <div class="flex items-center gap-1 mt-1 text-[10px] text-gray-500">
-                  <span>⭐ {{ $item['rating'] }}</span>
-                  <span>· {{ $item['sold'] }}+ bán</span>
+                  <span>⭐ {{ $item->category->name ?? '' }}</span>
                 </div>
               </div>
             </a>
             <div class="px-3 pb-3 flex items-center justify-between">
-              <span class="font-black text-[#FF6B35]">{{ number_format($item['price']) }}đ</span>
-              <button onclick="addToCart('{{ $item['id'] }}')"
+              <span class="font-black text-[#FF6B35]">{{ number_format($item->base_price) }}đ</span>
+              <button onclick="addToCart('{{ $item->id }}')"
                 class="w-8 h-8 rounded-lg border-2 border-[#1C1C1C] bg-[#FFD23F] flex items-center justify-center shadow-[2px_2px_0px_#1C1C1C] hover:shadow-none transition-all text-lg font-bold">+</button>
             </div>
           </div>
@@ -156,14 +155,14 @@
         <div class="p-4 space-y-3">
           @foreach($combos ?? [] as $combo)
           <a href="{{ route('client.menu') }}" class="flex gap-3 hover:bg-orange-50 rounded-xl p-2 transition-all block">
-            <img src="{{ $combo['image'] }}" alt="{{ $combo['name'] }}" class="w-16 h-16 object-cover rounded-xl border-2 border-[#1C1C1C] flex-shrink-0" />
+            <img src="{{ $combo->image }}" alt="{{ $combo->name }}" class="w-16 h-16 object-cover rounded-xl border-2 border-[#1C1C1C] flex-shrink-0" />
             <div class="flex-1 min-w-0">
-              <div class="font-black text-[#1C1C1C] text-sm">{{ $combo['name'] }}</div>
-              <div class="text-xs text-gray-500 mt-0.5">{{ $combo['description'] }}</div>
+              <div class="font-black text-[#1C1C1C] text-sm">{{ $combo->name }}</div>
+              <div class="text-xs text-gray-500 mt-0.5">{{ $combo->description }}</div>
               <div class="flex items-center gap-2 mt-1">
-                <span class="font-black text-[#FF6B35] text-sm">{{ number_format($combo['comboPrice']) }}đ</span>
-                <span class="text-xs text-gray-400 line-through">{{ number_format($combo['originalPrice']) }}đ</span>
-                <span class="bg-green-100 text-green-700 text-[10px] font-black px-1.5 py-0.5 rounded-full">-{{ number_format($combo['savings']) }}đ</span>
+                <span class="font-black text-[#FF6B35] text-sm">{{ number_format($combo->combo_price) }}đ</span>
+                <span class="text-xs text-gray-400 line-through">{{ number_format($combo->original_price) }}đ</span>
+                <span class="bg-green-100 text-green-700 text-[10px] font-black px-1.5 py-0.5 rounded-full">-{{ number_format($combo->original_price - $combo->combo_price) }}đ</span>
               </div>
             </div>
           </a>
@@ -221,13 +220,13 @@
         @foreach($combos ?? [] as $combo)
         <a href="{{ route('client.menu') }}" class="flex-shrink-0 w-48 bg-white border-2 border-[#1C1C1C] rounded-2xl neo-shadow overflow-hidden block">
           <div class="h-24 overflow-hidden">
-            <img src="{{ $combo['image'] }}" alt="{{ $combo['name'] }}" class="w-full h-full object-cover" />
+            <img src="{{ $combo->image }}" alt="{{ $combo->name }}" class="w-full h-full object-cover" />
           </div>
           <div class="p-3">
-            <div class="font-black text-[#1C1C1C] text-xs">{{ $combo['name'] }}</div>
+            <div class="font-black text-[#1C1C1C] text-xs">{{ $combo->name }}</div>
             <div class="flex items-center gap-1 mt-1">
-              <span class="font-black text-[#FF6B35] text-sm">{{ number_format($combo['comboPrice']) }}đ</span>
-              <span class="text-[10px] text-gray-400 line-through">{{ number_format($combo['originalPrice']) }}đ</span>
+              <span class="font-black text-[#FF6B35] text-sm">{{ number_format($combo->combo_price) }}đ</span>
+              <span class="text-[10px] text-gray-400 line-through">{{ number_format($combo->original_price) }}đ</span>
             </div>
           </div>
         </a>

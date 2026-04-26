@@ -34,47 +34,37 @@
     <form id="reg-form" action="{{ route('register.post') }}" method="POST" class="space-y-4" novalidate>
       @csrf
 
-      {{-- Name row --}}
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">Họ <span class="text-red-500">*</span></label>
-          <input type="text" name="last_name" id="last_name" value="{{ old('last_name') }}" placeholder="Nguyễn" required
-            class="w-full border-2 border-[#1C1C1C] rounded-xl px-3 py-2.5 text-sm outline-none transition-all"
-            onblur="validateRequired(this, 'last_name_err', 'Vui lòng nhập họ')" />
-          <p id="last_name_err" class="text-red-600 text-xs mt-1 hidden"></p>
-        </div>
-        <div>
-          <label class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">Tên <span class="text-red-500">*</span></label>
-          <input type="text" name="first_name" id="first_name" value="{{ old('first_name') }}" placeholder="Minh Tuấn" required
-            class="w-full border-2 border-[#1C1C1C] rounded-xl px-3 py-2.5 text-sm outline-none transition-all"
-            onblur="validateRequired(this, 'first_name_err', 'Vui lòng nhập tên')" />
-          <p id="first_name_err" class="text-red-600 text-xs mt-1 hidden"></p>
-        </div>
-      </div>
-
-      {{-- Email --}}
+      {{-- Name --}}
       <div>
-        <label class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">Email <span class="text-red-500">*</span></label>
-        <div class="relative">
-          <input type="email" name="email" id="reg_email" value="{{ old('email') }}" placeholder="minhtuan@email.com" required
-            class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-3 text-sm outline-none transition-all pr-10
-                   @error('email') input-invalid @enderror"
-            oninput="validateEmailField()" onblur="validateEmailField()" />
-          <span id="reg_email_icon" class="absolute right-3 top-1/2 -translate-y-1/2 text-sm hidden"></span>
-        </div>
-        <p id="reg_email_err" class="text-red-600 text-xs mt-1 hidden">@error('email'){{ $message }}@enderror</p>
+        <label class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">Họ và tên <span class="text-red-500">*</span></label>
+        <input type="text" name="name" id="name" value="{{ old('name') }}" placeholder="Nguyễn Minh Tuấn" required
+          class="w-full border-2 border-[#1C1C1C] rounded-xl px-3 py-2.5 text-sm outline-none transition-all @error('name') input-invalid @enderror"
+          onblur="validateRequired(this, 'name_err', 'Vui lòng nhập họ tên')" />
+        <p id="name_err" class="text-red-600 text-xs mt-1 hidden">@error('name'){{ $message }}@enderror</p>
       </div>
 
       {{-- Phone --}}
       <div>
-        <label class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">Số điện thoại</label>
+        <label class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">Số điện thoại <span class="text-red-500">*</span></label>
         <div class="relative">
-          <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" placeholder="0901 234 567"
-            class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-3 text-sm outline-none transition-all pr-10"
+          <input type="tel" name="phone" id="phone" value="{{ old('phone') }}" placeholder="0901 234 567" required
+            class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-3 text-sm outline-none transition-all pr-10 @error('phone') input-invalid @enderror"
             oninput="validatePhone()" onblur="validatePhone()" />
           <span id="phone_icon" class="absolute right-3 top-1/2 -translate-y-1/2 text-sm hidden"></span>
         </div>
-        <p id="phone_err" class="text-red-600 text-xs mt-1 hidden"></p>
+        <p id="phone_err" class="text-red-600 text-xs mt-1 hidden">@error('phone'){{ $message }}@enderror</p>
+      </div>
+
+      {{-- Email (tùy chọn) --}}
+      <div>
+        <label class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">Email <span class="text-gray-400 font-normal">(tùy chọn)</span></label>
+        <div class="relative">
+          <input type="email" name="email" id="reg_email" value="{{ old('email') }}" placeholder="minhtuan@email.com"
+            class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-3 text-sm outline-none transition-all pr-10 @error('email') input-invalid @enderror"
+            oninput="validateEmailField()" onblur="validateEmailField()" />
+          <span id="reg_email_icon" class="absolute right-3 top-1/2 -translate-y-1/2 text-sm hidden"></span>
+        </div>
+        <p id="reg_email_err" class="text-red-600 text-xs mt-1 hidden">@error('email'){{ $message }}@enderror</p>
       </div>
 
       {{-- Password --}}
