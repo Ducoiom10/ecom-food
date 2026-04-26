@@ -58,7 +58,8 @@
                 <div class="text-gray-400 text-xs">{{ $order->delivery_mode === 'delivery' ? '🛵 Giao hàng' : '🏪 Tự lấy' }}</div>
               </div>
               <div class="text-right">
-                <div class="font-black text-xl {{ $order->elapsed_minutes<10 ? 'text-green-400' : ($order->elapsed_minutes<20 ? 'text-yellow-400' : 'text-red-400') }}">
+                <div class="font-black text-xl {{ $order->elapsed_minutes<10 ? 'text-green-400' : ($order->elapsed_minutes<20 ? 'text-yellow-400' : 'text-red-400') }}"
+                  data-confirmed-at="{{ ($order->confirmed_at ?? $order->created_at)->toISOString() }}">
                   {{ $order->elapsed_minutes }}m
                 </div>
                 @if($order->priority==='high')
@@ -164,8 +165,30 @@ function switchView(view) {
     else { btn.classList.remove('bg-[#FF6B35]','text-white'); btn.classList.add('text-gray-400'); }
   });
 }
+
+// Clock
 setInterval(() => {
   document.getElementById('kds-clock').textContent = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'});
 }, 1000);
+
+// Auto-refresh elapsed minutes mỗi 30s (không reload page)
+setInterval(() => {
+  document.querySelectorAll('[data-confirmed-at]').forEach(el => {
+    const confirmedAt = new Date(el.dataset.confirmedAt);
+    const elapsed = Math.floor((Date.now() - confirmedAt.getTime()) / 60000);
+    el.textContent = elapsed + 'm';
+    el.className = el.className.replace(/text-(green|yellow|red)-400( animate-pulse)?/g, '');
+    if (elapsed < 10) el.classList.add('text-green-400');
+    else if (elapsed < 20) el.classList.add('text-yellow-400');
+    else el.classList.add('text-red-400', 'animate-pulse');
+  });
+}, 30000);
+
+// Auto-reload kanban mỗi 60s để lấy đơn mới
+setInterval(() => {
+  if (document.getElementById('view-kanban-panel') && !document.getElementById('view-kanban-panel').classList.contains('hidden')) {
+    window.location.reload();
+  }
+}, 60000);
 </script>
 @endpush

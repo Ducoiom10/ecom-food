@@ -25,6 +25,28 @@
 
   <h1 class="font-black text-[#1C1C1C] text-xl lg:text-2xl mb-6 lg:hidden">Giỏ hàng 🛒</h1>
 
+  {{-- Free shipping progress --}}
+  @php $freeShipTarget = 100000; $remaining = max(0, $freeShipTarget - ($subtotal ?? 0)); $pct = min(100, (($subtotal ?? 0) / $freeShipTarget) * 100); @endphp
+  @if($remaining > 0)
+  <div class="bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[3px_3px_0px_#1C1C1C] p-3 mb-4">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="text-lg">🚵</span>
+      <p class="text-xs font-bold text-[#1C1C1C]">
+        Mua thêm <span class="text-[#FF6B35] font-black">{{ number_format($remaining) }}đ</span> để được <span class="text-green-600 font-black">miễn phí vận chuyển!</span>
+      </p>
+    </div>
+    <div class="relative h-3 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
+      <div class="h-full bg-gradient-to-r from-[#FF6B35] to-[#FFD23F] rounded-full transition-all" style="width: {{ $pct }}%"></div>
+      <span class="absolute text-base" style="left: {{ $pct }}%; top: 50%; transform: translate(-50%,-50%)">🚵</span>
+    </div>
+  </div>
+  @else
+  <div class="bg-green-50 border-2 border-green-300 rounded-2xl p-3 mb-4 flex items-center gap-2">
+    <span class="text-lg">🎉</span>
+    <p class="text-xs font-bold text-green-700">Được miễn phí vận chuyển!</p>
+  </div>
+  @endif
+
   <div class="lg:grid lg:grid-cols-3 lg:gap-8">
 
     {{-- LEFT: Cart items --}}

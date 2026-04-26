@@ -155,7 +155,14 @@
         <div class="p-4 space-y-3">
           @foreach($combos ?? [] as $combo)
           <a href="{{ route('client.menu') }}" class="flex gap-3 hover:bg-orange-50 rounded-xl p-2 transition-all block">
-            <img src="{{ $combo->image }}" alt="{{ $combo->name }}" class="w-16 h-16 object-cover rounded-xl border-2 border-[#1C1C1C] flex-shrink-0" />
+            <div class="relative flex-shrink-0">
+              <img src="{{ $combo->image }}" alt="{{ $combo->name }}" class="w-16 h-16 object-cover rounded-xl border-2 border-[#1C1C1C]" />
+              @if($combo->original_price > $combo->combo_price)
+              <div class="absolute -top-1 -right-1 bg-[#FF6B35] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border border-white">
+                -{{ number_format($combo->original_price - $combo->combo_price) }}đ
+              </div>
+              @endif
+            </div>
             <div class="flex-1 min-w-0">
               <div class="font-black text-[#1C1C1C] text-sm">{{ $combo->name }}</div>
               <div class="text-xs text-gray-500 mt-0.5">{{ $combo->description }}</div>
@@ -219,8 +226,13 @@
       <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
         @foreach($combos ?? [] as $combo)
         <a href="{{ route('client.menu') }}" class="flex-shrink-0 w-48 bg-white border-2 border-[#1C1C1C] rounded-2xl neo-shadow overflow-hidden block">
-          <div class="h-24 overflow-hidden">
+          <div class="h-24 overflow-hidden relative">
             <img src="{{ $combo->image }}" alt="{{ $combo->name }}" class="w-full h-full object-cover" />
+            @if($combo->original_price > $combo->combo_price)
+            <div class="absolute top-2 left-2 bg-[#FF6B35] text-white text-[10px] font-black px-2 py-0.5 rounded-full border border-white shadow">
+              Tiết kiệm {{ number_format($combo->original_price - $combo->combo_price) }}đ
+            </div>
+            @endif
           </div>
           <div class="p-3">
             <div class="font-black text-[#1C1C1C] text-xs">{{ $combo->name }}</div>
