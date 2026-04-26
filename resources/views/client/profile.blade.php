@@ -45,24 +45,34 @@
 
   {{-- Orders tab --}}
   <div id="panel-orders" class="px-4 mt-4 space-y-3">
-    @foreach($orderHistory ?? [] as $order)
+    @forelse($orderHistory ?? [] as $order)
     <div class="bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[3px_3px_0px_#1C1C1C] p-4">
       <div class="flex items-center justify-between mb-2">
         <div>
-          <span class="font-black text-[#1C1C1C] text-sm">{{ $order['id'] }}</span>
-          <div class="text-gray-400 text-xs mt-0.5">🕐 {{ $order['date'] }}</div>
+          <span class="font-black text-[#1C1C1C] text-sm">{{ $order->order_number }}</span>
+          <div class="text-gray-400 text-xs mt-0.5">🕐 {{ $order->created_at->format('d/m/Y') }}</div>
         </div>
-        <span class="bg-green-100 text-green-600 text-xs font-black px-2 py-0.5 rounded-full border border-green-200">✓ Hoàn thành</span>
+        <span class="bg-green-100 text-green-600 text-xs font-black px-2 py-0.5 rounded-full border border-green-200">
+          {{ $order->status === 'completed' ? '✓ Hoàn thành' : ucfirst($order->status) }}
+        </span>
       </div>
-      <div class="text-xs text-gray-500 mb-3">{{ implode(' · ', $order['items']) }}</div>
+      <div class="text-xs text-gray-500 mb-3">
+        {{ $order->items->map(fn($i) => $i->product->name . ' x' . $i->quantity)->implode(' · ') }}
+      </div>
       <div class="flex items-center justify-between">
-        <span class="font-black text-[#FF6B35]">{{ number_format($order['total']) }}đ</span>
+        <span class="font-black text-[#FF6B35]">{{ number_format($order->grand_total) }}đ</span>
         <button class="flex items-center gap-1.5 bg-[#FFD23F] text-[#1C1C1C] text-xs font-black px-3 py-2 rounded-xl border-2 border-[#1C1C1C] shadow-[2px_2px_0px_#1C1C1C]">
           🔄 Đặt lại
         </button>
       </div>
     </div>
-    @endforeach
+    @empty
+    <div class="text-center py-8 text-gray-400">
+      <div class="text-4xl mb-2">📋</div>
+      <p class="font-bold text-sm">Chưa có đơn hàng nào</p>
+      <a href="{{ route('client.menu') }}" class="mt-2 inline-block text-[#FF6B35] font-black text-sm hover:underline">Đặt món ngay →</a>
+    </div>
+    @endforelse
   </div>
 
   {{-- Loyalty tab --}}

@@ -10,12 +10,13 @@ class ProfileController extends Controller
 {
     public function show()
     {
-        $user = auth()->user()->load('orders');
+        $user = auth()->user();
 
         return view('client.profile', [
             'user'         => $user,
             'snackPoints'  => $user->snack_points,
             'orderHistory' => $user->orders()
+                ->with('items.product')
                 ->latest()
                 ->take(10)
                 ->get(),
