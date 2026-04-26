@@ -32,19 +32,19 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">Họ và tên</label>
-          <input type="text" name="name" value="{{ $user['name'] ?? '' }}"
+          <input type="text" name="name" value="{{ $user->name }}"
             class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#FF6B35] transition-all" />
         </div>
         <div>
           <label class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">Số điện thoại</label>
-          <input type="tel" name="phone" value="{{ $user['phone'] ?? '' }}"
+          <input type="tel" name="phone" value="{{ $user->phone }}"
             class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#FF6B35] transition-all" />
         </div>
       </div>
 
       <div>
         <label class="block text-xs font-black text-[#1C1C1C] uppercase tracking-wide mb-1.5">Email</label>
-        <input type="email" name="email" value="{{ $user['email'] ?? '' }}"
+        <input type="email" name="email" value="{{ $user->email }}"
           class="w-full border-2 border-[#1C1C1C] rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#FF6B35] transition-all" />
       </div>
 
