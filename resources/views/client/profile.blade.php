@@ -10,8 +10,8 @@
     <div class="relative z-10 flex items-center gap-4">
       <div class="w-16 h-16 bg-[#FF6B35] border-2 border-[#FFD23F] rounded-2xl flex items-center justify-center text-2xl shadow-[4px_4px_0px_#FFD23F]">👤</div>
       <div>
-        <h2 class="text-white font-black text-xl">{{ $user['name'] ?? 'Minh Tuấn' }}</h2>
-        <p class="text-gray-400 text-sm">{{ $user['email'] ?? 'minhtuan@email.com' }}</p>
+        <h2 class="text-white font-black text-xl">{{ $user->name }}</h2>
+        <p class="text-gray-400 text-sm">{{ $user->phone }}</p>
         <div class="flex items-center gap-2 mt-1">
           <span class="bg-[#FFD23F] text-[#1C1C1C] text-xs font-black px-2 py-0.5 rounded-full">🏆 VIP Gold</span>
           <span class="text-gray-500 text-xs">Thành viên từ 01/2026</span>
@@ -57,7 +57,7 @@
         </span>
       </div>
       <div class="text-xs text-gray-500 mb-3">
-        {{ $order->items->map(fn($i) => $i->product->name . ' x' . $i->quantity)->implode(' · ') }}
+        {{ $order->items->map(fn($i) => ($i->product?->name ?? 'Sản phẩm') . ' x' . $i->quantity)->implode(' · ') }}
       </div>
       <div class="flex items-center justify-between">
         <span class="font-black text-[#FF6B35]">{{ number_format($order->grand_total) }}đ</span>
