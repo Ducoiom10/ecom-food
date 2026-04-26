@@ -3,19 +3,32 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
 use App\Models\Product;
 
 class MenuController extends Controller
 {
     public function index()
     {
-        $menuItems  = Product::with('category', 'options.values')
-            ->where('is_active', true)
-            ->get();
+        $query = Product::with('category')->where('is_active', true);
 
-        $categories = Category::orderBy('priority')->get();
+        if ($search = request('search')) {
+            $query->where('name', 'like', "%{$search}%");
+        }
 
-        return view('client.menu', compact('menuItems', 'categories'));
+        if ($cat = request('category')) {
+            if ($cat !== 'all') {
+                $query->whereHas('category', fn($q) => $q->where('slug', $cat));
+            }
+        }
+
+        $query->when(request('sort', 'popular'), fn($q, $sort) => match($sort) {
+            'price_asc'  => $q->orderBy('base_price'),
+            'price_desc' => $q->orderByDesc('base_price'),
+            default      => $q->orderByDesc('is_best_seller')->orderByDesc('is_new'),
+        });
+
+        $menuItems = $query->get();
+
+        return view('client.menu', compact('menuItems'));
     }
 }

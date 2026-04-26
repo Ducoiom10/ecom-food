@@ -84,7 +84,7 @@ class GroupOrderController extends Controller
             'products'    => $products,
             'myItems'     => $myItems,
             'myItemCount' => $myItems->sum('quantity'),
-            'myTotal'     => $myItems->sum(fn($i) => $i->unit_price * $i->quantity),
+            'myTotal'     => $myItems->sum(fn($i) => $i->price * $i->quantity),
             'grandTotal'  => $grandTotal,
             'isHost'      => $myParticipant?->is_host ?? false,
             'myParticipant' => $myParticipant,
@@ -123,8 +123,7 @@ class GroupOrderController extends Controller
                 $order->items()->create([
                     'product_id' => $product->id,
                     'quantity'   => 1,
-                    'unit_price' => $product->base_price,
-                    'subtotal'   => $product->base_price,
+                    'price'      => $product->base_price,
                 ]);
             }
         } elseif ($request->action === 'remove' && $item) {
@@ -136,7 +135,7 @@ class GroupOrderController extends Controller
         }
 
         // Cập nhật grand_total
-        $order->update(['grand_total' => $order->items()->sum(\DB::raw('unit_price * quantity'))]);
+        $order->update(['grand_total' => $order->items()->sum(DB::raw('price * quantity'))]);
 
         return back();
     }

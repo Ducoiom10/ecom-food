@@ -1,6 +1,5 @@
 @extends('layouts.client')
 @section('title', 'Thực đơn')
-@section('page_heading', 'Thực đơn')
 
 @push('styles')
 <style>
@@ -19,7 +18,7 @@
     @for($i=0;$i<6;$i++)
     <div class="flex sm:flex-col gap-3 border-2 border-gray-100 rounded-2xl overflow-hidden p-3">
       <div class="skeleton w-28 h-28 sm:w-full sm:h-44 flex-shrink-0"></div>
-      <div class="flex-1 space-y-2"><div class="skeleton h-4 w-3/4"></div><div class="skeleton h-3 w-full"></div><div class="skeleton h-3 w-1/2"></div><div class="skeleton h-8 w-full mt-2"></div></div>
+      <div class="flex-1 space-y-2"><div class="skeleton h-4 w-3/4"></div><div class="skeleton h-3 w-full"></div><div class="skeleton h-8 w-full mt-2"></div></div>
     </div>
     @endfor
   </div>
@@ -28,9 +27,11 @@
 <div id="main-menu" class="hidden">
 <div class="p-4 lg:p-8 max-w-7xl mx-auto">
 
-  {{-- Search + Filter bar --}}
+  {{-- Search + Filter --}}
   <div class="flex gap-3 mb-5">
     <form action="{{ route('client.menu') }}" method="GET" class="flex-1 relative">
+      @if(request('category'))<input type="hidden" name="category" value="{{ request('category') }}">@endif
+      @if(request('sort'))<input type="hidden" name="sort" value="{{ request('sort') }}">@endif
       <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
       <input type="text" name="search" value="{{ request('search') }}" placeholder="Tìm trong thực đơn..."
         class="w-full pl-9 pr-4 py-2.5 border-2 border-[#1C1C1C] rounded-xl bg-white shadow-[2px_2px_0px_#1C1C1C] text-sm outline-none focus:border-[#FF6B35] transition-all" />
@@ -44,9 +45,9 @@
   <div id="filter-panel" class="hidden mb-5 bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[4px_4px_0px_#1C1C1C] p-4">
     <p class="text-xs font-black text-[#1C1C1C] mb-3 uppercase tracking-wide">Sắp xếp theo</p>
     <div class="flex flex-wrap gap-2">
-      @foreach([['id'=>'popular','label'=>'Phổ biến nhất'],['id'=>'price_asc','label'=>'Giá tăng dần'],['id'=>'price_desc','label'=>'Giá giảm dần'],['id'=>'rating','label'=>'Đánh giá cao']] as $opt)
+      @foreach([['id'=>'popular','label'=>'Phổ biến nhất'],['id'=>'price_asc','label'=>'Giá tăng dần'],['id'=>'price_desc','label'=>'Giá giảm dần']] as $opt)
       <a href="{{ route('client.menu', array_merge(request()->all(), ['sort' => $opt['id']])) }}"
-        class="text-xs lg:text-sm font-bold px-3 py-1.5 rounded-xl border-2 border-[#1C1C1C] transition-all
+        class="text-xs font-bold px-3 py-1.5 rounded-xl border-2 border-[#1C1C1C] transition-all
                {{ request('sort','popular') === $opt['id'] ? 'bg-[#FF6B35] text-white shadow-[2px_2px_0px_#1C1C1C]' : 'bg-white text-[#1C1C1C] shadow-[2px_2px_0px_#1C1C1C] hover:shadow-none' }}">
         {{ $opt['label'] }}
       </a>
@@ -57,7 +58,7 @@
   {{-- Categories --}}
   <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-2 mb-5 lg:flex-wrap lg:overflow-visible">
     @foreach([['id'=>'all','label'=>'Tất cả','emoji'=>'🍽️'],['id'=>'noodles','label'=>'Mì & Phở','emoji'=>'🍜'],['id'=>'rice','label'=>'Cơm','emoji'=>'🍚'],['id'=>'snacks','label'=>'Ăn vặt','emoji'=>'🍗'],['id'=>'drinks','label'=>'Đồ uống','emoji'=>'🧋']] as $cat)
-    <a href="{{ route('client.menu', array_merge(request()->all(), ['category' => $cat['id']])) }}"
+    <a href="{{ route('client.menu', array_merge(request()->except('category'), ['category' => $cat['id']])) }}"
       class="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 border-[#1C1C1C] text-xs lg:text-sm font-bold transition-all
              {{ request('category','all') === $cat['id'] ? 'bg-[#FF6B35] text-white shadow-[2px_2px_0px_#1C1C1C]' : 'bg-white text-[#1C1C1C] shadow-[2px_2px_0px_#1C1C1C] hover:shadow-none' }}">
       {{ $cat['emoji'] }} {{ $cat['label'] }}
@@ -65,53 +66,46 @@
     @endforeach
   </div>
 
-  {{-- Results count --}}
-  <p class="text-xs text-gray-500 mb-4">{{ count($menuItems ?? []) }} món</p>
+  <p class="text-xs text-gray-500 mb-4">{{ $menuItems->count() }} món</p>
 
-  {{-- Empty state --}}
-  @if(empty($menuItems))
+  @if($menuItems->isEmpty())
   <div class="text-center py-20">
     <div class="text-6xl mb-4">🍜</div>
     <p class="font-black text-[#1C1C1C] text-xl">Không tìm thấy món nào</p>
-    <p class="text-gray-500 text-sm mt-2">Thử tìm kiếm từ khoá khác nhé!</p>
     <a href="{{ route('client.menu') }}" class="mt-4 inline-block bg-[#FF6B35] text-white font-black px-5 py-2.5 rounded-xl border-2 border-[#1C1C1C] shadow-[3px_3px_0px_#1C1C1C]">Xem tất cả</a>
   </div>
   @endif
 
-  {{-- Menu grid: 1 col mobile → 2 col tablet → 3 col desktop --}}
   <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-    @foreach($menuItems ?? [] as $item)
+    @foreach($menuItems as $item)
     <div class="bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[4px_4px_0px_#1C1C1C] overflow-hidden hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all group">
-      <a href="{{ route('client.product', $item['id']) }}" class="flex sm:flex-col">
-        {{-- Image --}}
-        <div class="relative w-28 sm:w-full flex-shrink-0 sm:flex-shrink overflow-hidden" style="sm:padding-top: 56%">
-          <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}"
+      <a href="{{ route('client.product', $item->id) }}" class="flex sm:flex-col">
+        <div class="relative w-28 sm:w-full flex-shrink-0 sm:flex-shrink overflow-hidden">
+          <img src="{{ $item->image }}" alt="{{ $item->name }}"
             class="w-full h-28 sm:h-44 object-cover group-hover:scale-105 transition-transform duration-300" />
-          @if($item['isNew'])
+          @if($item->is_new)
           <div class="absolute top-2 left-2 bg-[#FFD23F] border border-[#1C1C1C] text-[#1C1C1C] text-[9px] font-black px-1.5 py-0.5 rounded-full">NEW</div>
           @endif
-          @if($item['isBestSeller'])
+          @if($item->is_best_seller)
           <div class="absolute top-2 right-2 bg-[#FF6B35] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">🔥</div>
           @endif
         </div>
-        {{-- Info --}}
         <div class="flex-1 p-3">
-          <div class="font-black text-[#1C1C1C] text-sm leading-tight">{{ $item['name'] }}</div>
-          <div class="text-gray-500 text-xs mt-1 line-clamp-2">{{ $item['description'] }}</div>
-          <div class="flex items-center gap-2 mt-2 text-[10px] text-gray-400 flex-wrap">
-            <span>⭐ {{ $item['rating'] }}</span>
-            <span>· {{ $item['sold'] }}+ bán</span>
-            <span>· {{ $item['distance'] }}</span>
+          <div class="font-black text-[#1C1C1C] text-sm leading-tight">{{ $item->name }}</div>
+          <div class="text-gray-500 text-xs mt-1 line-clamp-2">{{ $item->description }}</div>
+          <div class="flex items-center gap-2 mt-2 text-[10px] text-gray-400">
+            <span>{{ $item->category?->name }}</span>
+            @if($item->calories)<span>· {{ $item->calories }} kcal</span>@endif
           </div>
         </div>
       </a>
       <div class="px-3 pb-3 flex items-center justify-between">
-        <span class="font-black text-[#FF6B35] text-base">{{ number_format($item['price']) }}đ</span>
+        <span class="font-black text-[#FF6B35] text-base">{{ number_format($item->base_price) }}đ</span>
         <div class="flex items-center gap-2">
-          <button onclick="removeFromCart('{{ $item['id'] }}')" id="btn-minus-{{ $item['id'] }}"
+          <button onclick="removeFromCart({{ $item->id }})" id="btn-minus-{{ $item->id }}"
             class="w-8 h-8 rounded-lg border-2 border-[#1C1C1C] bg-white items-center justify-center shadow-[1px_1px_0px_#1C1C1C] font-black text-lg hidden">−</button>
-          <span id="qty-{{ $item['id'] }}" class="font-black text-[#1C1C1C] text-sm min-w-[20px] text-center hidden">0</span>
-          <button onclick="addToCart('{{ $item['id'] }}')"
+          <span id="qty-{{ $item->id }}" class="font-black text-[#1C1C1C] text-sm min-w-[20px] text-center hidden">0</span>
+          <button onclick="addToCart({{ $item->id }})"
             class="w-8 h-8 rounded-lg border-2 border-[#1C1C1C] bg-[#FF6B35] text-white flex items-center justify-center shadow-[2px_2px_0px_#1C1C1C] hover:shadow-none transition-all text-lg">+</button>
         </div>
       </div>
@@ -119,7 +113,7 @@
     @endforeach
   </div>
 
-  {{-- Floating cart (mobile) --}}
+  {{-- Floating cart --}}
   <div id="cart-bar" class="fixed bottom-20 left-4 right-4 lg:bottom-6 lg:left-auto lg:right-8 lg:w-80 z-20 hidden">
     <a href="{{ route('client.cart') }}"
       class="w-full bg-[#FF6B35] text-white font-black py-4 rounded-2xl border-2 border-[#1C1C1C] shadow-[4px_4px_0px_#1C1C1C] flex items-center justify-between px-5 hover:shadow-none transition-all block">
@@ -130,7 +124,7 @@
   </div>
 
 </div>
-</div>{{-- end main-menu --}}
+</div>
 @endsection
 
 @push('scripts')
@@ -141,11 +135,16 @@ window.addEventListener('load', () => {
 });
 
 let cart = {};
-const prices = @json(collect($menuItems ?? [])->pluck('price', 'id'));
+const prices = @json($menuItems->pluck('base_price', 'id'));
 
 function addToCart(id) {
   cart[id] = (cart[id] || 0) + 1;
   updateUI(id);
+  fetch('/cart/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+    body: JSON.stringify({ product_id: id, quantity: 1 })
+  });
 }
 function removeFromCart(id) {
   if (cart[id] > 0) cart[id]--;
