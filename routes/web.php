@@ -5,7 +5,9 @@ use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\GroupOrderController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\MenuController;
+use App\Http\Controllers\Client\NotificationController;
 use App\Http\Controllers\Client\OrderController;
+use App\Http\Controllers\Client\OrderTrackingController;
 use App\Http\Controllers\Client\ProductController;
 use App\Http\Controllers\Client\ProfileController;
 use App\Http\Controllers\Admin\BranchController;
@@ -33,7 +35,11 @@ Route::prefix('')->name('client.')->group(function () {
     // Public
     Route::get('/',             [HomeController::class,   'index'])->name('home');
     Route::get('/menu',         [MenuController::class,   'index'])->name('menu');
-    Route::get('/product/{id}', [ProductController::class,'show'])->name('product');
+    Route::get('/product/{id}', [ProductController::class, 'show'])->name('product');
+
+    // Guest Order Tracking
+    Route::get('/track-order',  [OrderTrackingController::class, 'showForm'])->name('track-order');
+    Route::post('/track-order', [OrderTrackingController::class, 'track'])->name('track-order.post');
 
     // Auth required
     Route::middleware('auth')->group(function () {
@@ -57,6 +63,12 @@ Route::prefix('')->name('client.')->group(function () {
         // Orders
         Route::get('/orders/{id}', [OrderController::class, 'show'])->name('order.show');
 
+        // Notifications
+        Route::get('/notifications',                [NotificationController::class, 'index'])->name('notifications');
+        Route::patch('/notifications/{id}/read',    [NotificationController::class, 'markRead'])->name('notifications.read');
+        Route::post('/notifications/read-all',      [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+        Route::get('/notifications/unread-count',   [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+
         // Group Order
         Route::get('/group-order',              [GroupOrderController::class, 'index'])->name('group-order');
         Route::post('/group-order',             [GroupOrderController::class, 'create'])->name('group-order.create');
@@ -75,30 +87,30 @@ Route::prefix('admin')->name('admin.')
     ->middleware(['auth', 'role:super_admin,branch_manager,coordinator,kitchen_staff,support'])
     ->group(function () {
 
-    Route::get('/', fn() => redirect()->route('admin.kds'));
+        Route::get('/', fn() => redirect()->route('admin.kds'));
 
-    // KDS — kitchen_staff trở lên
-    Route::get('/kds',                  [KdsController::class, 'index'])->name('kds');
-    Route::post('/kds/{id}/move',       [KdsController::class, 'move'])->name('kds.move');
-    Route::patch('/kds/inventory/{id}', [KdsController::class, 'updateInventory'])->name('kds.inventory');
+        // KDS — kitchen_staff trở lên
+        Route::get('/kds',                  [KdsController::class, 'index'])->name('kds');
+        Route::post('/kds/{id}/move',       [KdsController::class, 'move'])->name('kds.move');
+        Route::patch('/kds/inventory/{id}', [KdsController::class, 'updateInventory'])->name('kds.inventory');
 
-    // Smart Prep
-    Route::get('/smart-prep',           [SmartPrepController::class, 'index'])->name('smartprep');
-    Route::post('/smart-prep/{id}/ack', [SmartPrepController::class, 'acknowledge'])->name('smartprep.acknowledge');
+        // Smart Prep
+        Route::get('/smart-prep',           [SmartPrepController::class, 'index'])->name('smartprep');
+        Route::post('/smart-prep/{id}/ack', [SmartPrepController::class, 'acknowledge'])->name('smartprep.acknowledge');
 
-    // Dispatch — coordinator trở lên
-    Route::get('/dispatch',             [DispatchController::class, 'index'])->name('dispatch');
-    Route::patch('/dispatch/{id}',      [DispatchController::class, 'update'])->name('dispatch.update');
-    Route::post('/dispatch/assign',     [DispatchController::class, 'assign'])->name('dispatch.assign');
+        // Dispatch — coordinator trở lên
+        Route::get('/dispatch',             [DispatchController::class, 'index'])->name('dispatch');
+        Route::patch('/dispatch/{id}',      [DispatchController::class, 'update'])->name('dispatch.update');
+        Route::post('/dispatch/assign',     [DispatchController::class, 'assign'])->name('dispatch.assign');
 
-    // Branch — branch_manager trở lên
-    Route::get('/branch',               [BranchController::class, 'index'])->name('branch');
-    Route::patch('/branch/refund/{id}', [BranchController::class, 'refund'])->name('branch.refund');
+        // Branch — branch_manager trở lên
+        Route::get('/branch',               [BranchController::class, 'index'])->name('branch');
+        Route::patch('/branch/refund/{id}', [BranchController::class, 'refund'])->name('branch.refund');
 
-    // Super Admin only
-    Route::middleware('role:super_admin')->group(function () {
-        Route::get('/super',        [SuperAdminController::class, 'index'])->name('super');
-        Route::post('/super/push',  [SuperAdminController::class, 'sendPush'])->name('super.push');
-        Route::patch('/super/perm', [SuperAdminController::class, 'updatePerm'])->name('super.perm');
+        // Super Admin only
+        Route::middleware('role:super_admin')->group(function () {
+            Route::get('/super',        [SuperAdminController::class, 'index'])->name('super');
+            Route::post('/super/push',  [SuperAdminController::class, 'sendPush'])->name('super.push');
+            Route::patch('/super/perm', [SuperAdminController::class, 'updatePerm'])->name('super.perm');
+        });
     });
-});
