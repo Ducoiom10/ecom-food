@@ -90,27 +90,35 @@ Route::prefix('admin')->name('admin.')
         Route::get('/', fn() => redirect()->route('admin.kds'));
 
         // KDS — kitchen_staff trở lên
-        Route::get('/kds',                  [KdsController::class, 'index'])->name('kds');
-        Route::post('/kds/{id}/move',       [KdsController::class, 'move'])->name('kds.move');
-        Route::patch('/kds/inventory/{id}', [KdsController::class, 'updateInventory'])->name('kds.inventory');
+        Route::middleware('permission:view_kds')->group(function () {
+            Route::get('/kds',                  [KdsController::class, 'index'])->name('kds');
+            Route::post('/kds/{id}/move',       [KdsController::class, 'move'])->name('kds.move')->middleware('permission:update_kds');
+            Route::patch('/kds/inventory/{id}', [KdsController::class, 'updateInventory'])->name('kds.inventory')->middleware('permission:update_kds');
+        });
 
         // Smart Prep
-        Route::get('/smart-prep',           [SmartPrepController::class, 'index'])->name('smartprep');
-        Route::post('/smart-prep/{id}/ack', [SmartPrepController::class, 'acknowledge'])->name('smartprep.acknowledge');
+        Route::middleware('permission:view_smartprep')->group(function () {
+            Route::get('/smart-prep',           [SmartPrepController::class, 'index'])->name('smartprep');
+            Route::post('/smart-prep/{id}/ack', [SmartPrepController::class, 'acknowledge'])->name('smartprep.acknowledge')->middleware('permission:update_smartprep');
+        });
 
         // Dispatch — coordinator trở lên
-        Route::get('/dispatch',             [DispatchController::class, 'index'])->name('dispatch');
-        Route::patch('/dispatch/{id}',      [DispatchController::class, 'update'])->name('dispatch.update');
-        Route::post('/dispatch/assign',     [DispatchController::class, 'assign'])->name('dispatch.assign');
+        Route::middleware('permission:view_dispatch')->group(function () {
+            Route::get('/dispatch',             [DispatchController::class, 'index'])->name('dispatch');
+            Route::patch('/dispatch/{id}',      [DispatchController::class, 'update'])->name('dispatch.update')->middleware('permission:update_dispatch');
+            Route::post('/dispatch/assign',     [DispatchController::class, 'assign'])->name('dispatch.assign')->middleware('permission:assign_shipper');
+        });
 
         // Branch — branch_manager trở lên
-        Route::get('/branch',               [BranchController::class, 'index'])->name('branch');
-        Route::patch('/branch/refund/{id}', [BranchController::class, 'refund'])->name('branch.refund');
+        Route::middleware('permission:view_branch')->group(function () {
+            Route::get('/branch',               [BranchController::class, 'index'])->name('branch');
+            Route::patch('/branch/refund/{id}', [BranchController::class, 'refund'])->name('branch.refund')->middleware('permission:refund_orders');
+        });
 
         // Super Admin only
-        Route::middleware('role:super_admin')->group(function () {
+        Route::middleware('permission:manage_permissions')->group(function () {
             Route::get('/super',        [SuperAdminController::class, 'index'])->name('super');
-            Route::post('/super/push',  [SuperAdminController::class, 'sendPush'])->name('super.push');
+            Route::post('/super/push',  [SuperAdminController::class, 'sendPush'])->name('super.push')->middleware('permission:send_push');
             Route::patch('/super/perm', [SuperAdminController::class, 'updatePerm'])->name('super.perm');
         });
     });

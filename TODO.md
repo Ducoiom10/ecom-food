@@ -1,31 +1,46 @@
-# Sprint 9 TODO
+# Sprint 10 TODO — Cải thiện RBAC phân quyền rõ ràng
 
 ## Plan
 
-- [x]   1. Tạo TODO.md (theo dõi tiến độ)
-- [x]   2. RBAC Permissions DB
-    - [x] 2.1 Migration `role_permissions`
-    - [x] 2.2 Model `RolePermission`
-    - [x] 2.3 Update `SuperAdminController::updatePerm` lưu DB
-    - [x] 2.4 Update `SuperAdminController::index` load từ DB
-    - [x] 2.5 Update `super.blade.php` cho phép chỉnh sửa matrix
-- [x]   3. Guest Order Tracking
-    - [x] 3.1 Tạo `OrderTrackingController`
-    - [x] 3.2 Routes public `/track-order` (GET/POST)
-    - [x] 3.3 View form tìm kiếm + reuse detail view
-- [x]   4. Notification System
-    - [x] 4.1 `NotificationController`
-    - [x] 4.2 Routes `/notifications` + mark-read
-    - [x] 4.3 Update header dropdown notifications
-- [x]   5. Order Status Logs
-    - [x] 5.1 Migration `order_status_logs`
-    - [x] 5.2 Model `OrderStatusLog`
-    - [x] 5.3 Observer ghi log tự động
-- [x]   6. Model Observers & Audit
-    - [x] 6.1 Tạo `OrderObserver`
-    - [x] 6.2 Đăng ký trong `AppServiceProvider`
-- [x]   7. Feature Tests
-    - [x] 7.1 `CartTest`
-    - [x] 7.2 `OrderTest`
-    - [x] 7.3 `GroupOrderTest`
-- [x]   8. Commit & Push Sprint 9
+- [x]   1. Tạo `PermissionMiddleware` (`app/Http/Middleware/PermissionMiddleware.php`)
+- [x]   2. Đăng ký alias `permission` trong `bootstrap/app.php`
+- [x]   3. Thêm `hasPermission()` vào `User` model
+- [x]   4. Cập nhật `SuperAdminController` — mở rộng defaultRolePerms + kiểm tra permission trong action
+- [x]   5. Cập nhật `KdsController` — kiểm tra `view_kds` / `update_kds`
+- [x]   6. Cập nhật `SmartPrepController` — kiểm tra `view_smartprep` / `update_smartprep`
+- [x]   7. Cập nhật `DispatchController` — kiểm tra `view_dispatch` / `update_dispatch` / `assign_shipper`
+- [x]   8. Cập nhật `BranchController` — kiểm tra `view_branch` / `refund_orders`
+- [x]   9. Cập nhật `routes/web.php` — thay `role:` bằng `permission:` cho từng route group
+- [x]   10. Cập nhật `layouts/admin.blade.php` — sidebar hiển thị theo permission
+- [x]   11. Cập nhật `admin/dashboard/super.blade.php` — tabs hiển thị theo permission
+- [x]   12. Kiểm tra routes & test
+
+## Kết quả
+
+### Permission Matrix
+
+| Permission           | super_admin | branch_manager | coordinator | kitchen_staff | support |
+| -------------------- | ----------- | -------------- | ----------- | ------------- | ------- |
+| `view_kds`           | ✅          | ✅             | ❌          | ✅            | ❌      |
+| `update_kds`         | ✅          | ❌             | ❌          | ✅            | ❌      |
+| `view_smartprep`     | ✅          | ✅             | ❌          | ✅            | ❌      |
+| `update_smartprep`   | ✅          | ❌             | ❌          | ✅            | ❌      |
+| `view_dispatch`      | ✅          | ❌             | ✅          | ❌            | ❌      |
+| `update_dispatch`    | ✅          | ❌             | ✅          | ❌            | ❌      |
+| `assign_shipper`     | ✅          | ❌             | ✅          | ❌            | ❌      |
+| `view_branch`        | ✅          | ✅             | ❌          | ❌            | ❌      |
+| `refund_orders`      | ✅          | ✅             | ❌          | ❌            | ✅      |
+| `view_revenue`       | ✅          | ✅             | ❌          | ❌            | ❌      |
+| `manage_vouchers`    | ✅          | ❌             | ❌          | ❌            | ❌      |
+| `send_push`          | ✅          | ❌             | ❌          | ❌            | ❌      |
+| `manage_permissions` | ✅          | ❌             | ❌          | ❌            | ❌      |
+| `view_audit_log`     | ✅          | ❌             | ❌          | ❌            | ❌      |
+
+### Các thay đổi chính
+
+1. **PermissionMiddleware** — kiểm tra `RolePermission::has()` thay vì chỉ so sánh role name. `super_admin` luôn bypass.
+2. **User::hasPermission()** — method tiện ích để kiểm tra quyền ở controller & Blade view.
+3. **Routes** — mỗi route group admin được bảo vệ bằng `permission:` middleware phù hợp.
+4. **Controllers** — mỗi action kiểm tra `abort_unless(auth()->user()->hasPermission(...), 403)` để đảm bảo defense in depth.
+5. **Sidebar** — chỉ hiển thị nav item nếu user có permission tương ứng.
+6. **Super Admin Tabs** — Analytics, Campaigns, RBAC, Audit chỉ hiện khi có permission tương ứng.

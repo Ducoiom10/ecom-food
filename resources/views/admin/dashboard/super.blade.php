@@ -7,19 +7,29 @@
 
         {{-- Tabs --}}
         <div class="flex border-b-2 border-[#333] bg-[#1A1A1A] flex-shrink-0 overflow-x-auto">
-            @foreach ([['id' => 'analytics', 'label' => 'Analytics', 'icon' => '📊'], ['id' => 'campaigns', 'label' => 'Campaigns', 'icon' => '🏷️'], ['id' => 'roles', 'label' => 'RBAC', 'icon' => '🔒'], ['id' => 'audit', 'label' => 'Audit', 'icon' => '📋']] as $tab)
+            @php
+                $tabs = [
+                    ['id' => 'analytics', 'label' => 'Analytics', 'icon' => '📊', 'perm' => 'view_revenue'],
+                    ['id' => 'campaigns', 'label' => 'Campaigns', 'icon' => '🏷️', 'perm' => 'send_push'],
+                    ['id' => 'roles',     'label' => 'RBAC',      'icon' => '🔒', 'perm' => 'manage_permissions'],
+                    ['id' => 'audit',     'label' => 'Audit',     'icon' => '📋', 'perm' => 'view_audit_log'],
+                ];
+            @endphp
+            @foreach ($tabs as $tab)
+                @if(auth()->user()->hasPermission($tab['perm']))
                 <a href="{{ route('admin.super', ['tab' => $tab['id']]) }}"
                     class="flex items-center gap-1.5 px-4 lg:px-5 py-3 text-xs lg:text-sm font-black border-r border-[#333] transition-all whitespace-nowrap flex-shrink-0
              {{ ($activeTab ?? 'analytics') === $tab['id'] ? 'bg-[#FF6B35] text-white' : 'text-gray-400 hover:text-white' }}">
                     {{ $tab['icon'] }} {{ $tab['label'] }}
                 </a>
+                @endif
             @endforeach
         </div>
 
         <div class="flex-1 overflow-y-auto p-4 lg:p-6">
 
             {{-- ANALYTICS --}}
-            @if (($activeTab ?? 'analytics') === 'analytics')
+            @if (($activeTab ?? 'analytics') === 'analytics' && auth()->user()->hasPermission('view_revenue'))
                 <div class="space-y-4 lg:space-y-6">
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
                         @foreach ([['label' => 'Tổng doanh thu', 'value' => number_format($totalRevenue ?? 0) . 'đ', 'icon' => '💰', 'color' => 'text-green-400', 'bg' => 'border-green-700/30'], ['label' => 'Đơn hôm nay', 'value' => \App\Models\Order\Order::whereDate('created_at', today())->count() . ' đơn', 'icon' => '⚡', 'color' => 'text-orange-400', 'bg' => 'border-orange-700/30'], ['label' => 'Người dùng', 'value' => \App\Models\User\User::where('role', 'customer')->count() . ' người', 'icon' => '👥', 'color' => 'text-blue-400', 'bg' => 'border-blue-700/30'], ['label' => 'Chi nhánh', 'value' => \App\Models\System\Branch::where('status', 'open')->count() . ' mở', 'icon' => '🏪', 'color' => 'text-purple-400', 'bg' => 'border-purple-700/30']] as $kpi)
@@ -27,7 +37,6 @@
                                 <div class="text-xl lg:text-2xl mb-2">{{ $kpi['icon'] }}</div>
                                 <div class="text-white font-black text-lg lg:text-2xl">{{ $kpi['value'] }}</div>
                                 <div class="text-gray-500 text-xs mt-0.5">{{ $kpi['label'] }}</div>
-                            </div>
                         @endforeach
                     </div>
 
@@ -49,7 +58,6 @@
                                         liệu</div>
                                 @endforelse
                             </div>
-                        </div>
 
                         {{-- Branch comparison --}}
                         <div class="bg-[#1A1A1A] border-2 border-[#333] rounded-2xl p-4">
@@ -67,23 +75,21 @@
                                         <div class="h-3 bg-[#333] rounded-full overflow-hidden">
                                             <div class="h-full bg-gradient-to-r from-[#FF6B35] to-[#FFD23F] rounded-full"
                                                 style="width: {{ min(100, ($branchRevenue / max(1, 16000000)) * 100) }}%"></div>
-                                        </div>
                                     </div>
                                 @endforeach
                             </div>
-                        </div>
                     </div>
-                </div>
             @endif
 
             {{-- CAMPAIGNS --}}
-            @if (($activeTab ?? '') === 'campaigns')
+            @if (($activeTab ?? '') === 'campaigns' && auth()->user()->hasPermission('send_push'))
                 <div class="space-y-4 lg:space-y-6">
                     <div class="flex items-center justify-between">
                         <h2 class="text-white font-black text-lg lg:text-xl">Quản lý Campaigns</h2>
                     </div>
 
                     {{-- Vouchers table --}}
+                    @if(auth()->user()->hasPermission('manage_vouchers'))
                     <div class="bg-[#1A1A1A] border-2 border-[#333] rounded-2xl overflow-hidden">
                         <div class="overflow-x-auto">
                             <table class="w-full min-w-[600px]">
@@ -114,7 +120,6 @@
                                                         <div class="h-full bg-[#FF6B35] rounded-full"
                                                             style="width: {{ ($v->used_count / max(1, $v->max_uses)) * 100 }}%">
                                                         </div>
-                                                    </div>
                                                 @endif
                                             </td>
                                             <td class="px-4 py-3 text-gray-400 text-sm">
@@ -135,7 +140,7 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    @endif
 
                     {{-- Push notification --}}
                     <div class="bg-[#1A1A1A] border-2 border-[#333] rounded-2xl p-4 lg:p-5">
@@ -161,7 +166,6 @@
                                         <option value="vip">Khách VIP</option>
                                     </select>
                                 </div>
-                            </div>
                             <textarea name="body" placeholder="Nội dung thông báo..."
                                 class="w-full bg-[#222] border border-[#444] text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-[#FF6B35] h-20 resize-none"></textarea>
                             <button type="submit"
@@ -169,11 +173,10 @@
                                 Gửi ngay</button>
                         </form>
                     </div>
-                </div>
             @endif
 
             {{-- ROLES --}}
-            @if (($activeTab ?? '') === 'roles')
+            @if (($activeTab ?? '') === 'roles' && auth()->user()->hasPermission('manage_permissions'))
                 <div class="space-y-4">
                     <h2 class="text-white font-black text-lg lg:text-xl flex items-center gap-2">🔒 RBAC Permission Matrix
                     </h2>
@@ -213,7 +216,6 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
                 </div>
 
                 <script>
@@ -247,7 +249,7 @@
             @endif
 
             {{-- AUDIT --}}
-            @if (($activeTab ?? '') === 'audit')
+            @if (($activeTab ?? '') === 'audit' && auth()->user()->hasPermission('view_audit_log'))
                 <div class="space-y-4">
                     <h2 class="text-white font-black text-lg lg:text-xl flex items-center gap-2">📋 Audit Trail</h2>
                     <div class="bg-[#1A1A1A] border-2 border-[#333] rounded-2xl overflow-hidden">
@@ -285,10 +287,8 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
                 </div>
             @endif
 
         </div>
-    </div>
 @endsection
