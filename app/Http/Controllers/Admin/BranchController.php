@@ -3,17 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Branch;
-use App\Models\InventoryItem;
-use App\Models\Order;
+use App\Models\Inventory\InventoryItem;
+use App\Models\Order\Order;
+use App\Models\System\Branch;
 
 class BranchController extends Controller
 {
     public function index()
     {
-        $branches = Branch::all();
+        $branches   = Branch::all();
         $selectedId = request('branch', $branches->first()?->id);
-        $selected = Branch::find($selectedId);
+        $selected   = Branch::find($selectedId);
 
         $todayOrders = $selected
             ? Order::where('branch_id', $selected->id)->whereDate('created_at', today())->get()
@@ -21,9 +21,7 @@ class BranchController extends Controller
 
         $revenue    = $todayOrders->where('status', 'completed')->sum('grand_total');
         $orderCount = $todayOrders->count();
-        $avgRating  = 4.8; // TODO: từ reviews table Sprint 3
 
-        // Doanh thu theo giờ
         $hourlyData = $todayOrders->where('status', 'completed')
             ->groupBy(fn($o) => $o->created_at->format('H:00'))
             ->map(fn($g, $h) => ['hour' => $h, 'total' => $g->count()])
@@ -45,12 +43,12 @@ class BranchController extends Controller
                 ->get()
             : collect();
 
-        return view('admin.branch', [
+        return view('admin.branches.index', [
             'branches'       => $branches,
             'selectedBranch' => $selected,
             'revenue'        => $revenue,
             'orderCount'     => $orderCount,
-            'avgRating'      => $avgRating,
+            'avgRating'      => 4.8,
             'hourlyData'     => $hourlyData,
             'lowStock'       => $lowStock,
             'refunds'        => $refunds,

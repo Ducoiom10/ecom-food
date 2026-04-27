@@ -40,15 +40,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('notifications', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('title');
-            $table->text('body')->nullable();
-            $table->boolean('is_read')->default(false);
-            $table->timestamp('created_at')->useCurrent();
-        });
-
         Schema::create('audit_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
@@ -66,7 +57,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('audit_logs');
-        Schema::dropIfExists('notifications');
         Schema::dropIfExists('push_campaigns');
         Schema::dropIfExists('user_challenge_progress');
         Schema::dropIfExists('loyalty_challenges');

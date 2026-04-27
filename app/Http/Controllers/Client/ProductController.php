@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Models\Catalog\Product;
 
 class ProductController extends Controller
 {
@@ -20,6 +20,6 @@ class ProductController extends Controller
             ->take(2)
             ->get();
 
-        return view('client.product', compact('product', 'related'));
+        return view('client.products.detail', compact('product', 'related'));
     }
 }

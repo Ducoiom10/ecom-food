@@ -218,7 +218,27 @@
   </nav>
 </div>
 
+{{-- Toast notifications --}}
+<div id="toast-container" class="fixed top-4 right-4 z-[9999] space-y-2 pointer-events-none"></div>
+@if(session('success'))
+<script>document.addEventListener('DOMContentLoaded',()=>showToast('{{ session('success') }}','success'));</script>
+@endif
+@if(session('error'))
+<script>document.addEventListener('DOMContentLoaded',()=>showToast('{{ session('error') }}','error'));</script>
+@endif
+
 <script>
+function showToast(msg, type = 'success') {
+  const colors = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-blue-500' };
+  const icons  = { success: '✅', error: '❌', info: 'ℹ️' };
+  const t = document.createElement('div');
+  t.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-[#1C1C1C] shadow-[3px_3px_0px_#1C1C1C] text-white text-sm font-bold ${colors[type]} translate-x-full transition-transform duration-300`;
+  t.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(t);
+  requestAnimationFrame(() => { requestAnimationFrame(() => { t.classList.remove('translate-x-full'); }); });
+  setTimeout(() => { t.classList.add('translate-x-full'); setTimeout(() => t.remove(), 300); }, 3000);
+}
+
 // Đóng dropdown khi click ra ngoài
 document.addEventListener('click', function(e) {
   if (!document.getElementById('mob-branch-wrap')?.contains(e.target)) {

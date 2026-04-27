@@ -57,12 +57,12 @@ audit_logs:             id, user_id, action, table_name, row_id, old_values (JSO
 
 ### ✅ Điểm Mạnh
 
-| Điểm | Lý do |
-|------|-------|
-| Tách `product_options` / `product_option_values` | Giải quyết Size/Topping linh hoạt, không hardcode |
-| `group_rooms` → `participants` → `order_items.participant_id` | Luồng Group Order rõ ràng |
-| `audit_logs` với `old_values/new_values JSON` | Đúng chuẩn enterprise, đáp ứng SuperAdmin Audit Trail |
-| `inventory_transactions` dạng ledger (append-only) | An toàn cho concurrency, dễ rollback |
+| Điểm                                                          | Lý do                                                 |
+| ------------------------------------------------------------- | ----------------------------------------------------- |
+| Tách `product_options` / `product_option_values`              | Giải quyết Size/Topping linh hoạt, không hardcode     |
+| `group_rooms` → `participants` → `order_items.participant_id` | Luồng Group Order rõ ràng                             |
+| `audit_logs` với `old_values/new_values JSON`                 | Đúng chuẩn enterprise, đáp ứng SuperAdmin Audit Trail |
+| `inventory_transactions` dạng ledger (append-only)            | An toàn cho concurrency, dễ rollback                  |
 
 ### ❌ Thiếu Sót Chức Năng
 
@@ -331,6 +331,7 @@ orders (status: confirmed → preparing → ready → completed)
 ```
 
 **Yêu cầu từ KDSPage:**
+
 - Hiển thị `elapsed` time → cần `confirmed_at` hoặc `preparing_at`
 - Hiển thị toppings → join `order_item_options` → `product_option_values`
 - Priority flag → cần thêm `priority ENUM('normal','high')` vào `orders`
@@ -363,6 +364,7 @@ orders (status: ready → delivering → completed)
 ```
 
 **Yêu cầu từ DispatchPage:**
+
 - Live map markers → `shippers.current_lat/lng` (cần update realtime qua WebSocket)
 - Assign shipper → `orders.shipper_id = shippers.id`, `orders.status = 'picking'`
 - Batch orders → query `orders WHERE status IN ('ready','picking') AND branch_id = ?`
@@ -403,15 +405,15 @@ User bấm "Đặt hàng"
 
 ## 5. Vấn Đề Kỹ Thuật
 
-| # | Vấn đề | Hiện tại | Đề xuất |
-|---|--------|----------|---------|
-| 1 | `group_rooms.host_id` FK về đâu? | Không rõ | Nên là `participants.id` để nhất quán |
-| 2 | `participants.user_id nullable` | Không có constraint | Thêm: `CHECK (user_id IS NOT NULL OR display_name IS NOT NULL)` |
-| 3 | `inventory_transactions.reference_id` | Polymorphic không có type | Thêm `reference_type ENUM('order','manual','import','waste')` |
-| 4 | `smart_prep_logs.weather_data JSON` | Schema không cố định | Tách thành: `weather_condition`, `temperature`, `delivery_boost_pct` |
-| 5 | Missing indexes | Chỉ đề cập `room_code` | Thêm index: `orders(status)`, `orders(branch_id)`, `orders(created_at)`, `inventory_items(branch_id)` |
-| 6 | `orders.order_number` | Unique string | Nên có format: `BAE-{branch_code}-{YYYYMMDD}-{seq}` |
-| 7 | Không có `soft delete` | Hard delete | Thêm `deleted_at` cho `products`, `vouchers`, `users` |
+| #   | Vấn đề                                | Hiện tại                  | Đề xuất                                                                                               |
+| --- | ------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 1   | `group_rooms.host_id` FK về đâu?      | Không rõ                  | Nên là `participants.id` để nhất quán                                                                 |
+| 2   | `participants.user_id nullable`       | Không có constraint       | Thêm: `CHECK (user_id IS NOT NULL OR display_name IS NOT NULL)`                                       |
+| 3   | `inventory_transactions.reference_id` | Polymorphic không có type | Thêm `reference_type ENUM('order','manual','import','waste')`                                         |
+| 4   | `smart_prep_logs.weather_data JSON`   | Schema không cố định      | Tách thành: `weather_condition`, `temperature`, `delivery_boost_pct`                                  |
+| 5   | Missing indexes                       | Chỉ đề cập `room_code`    | Thêm index: `orders(status)`, `orders(branch_id)`, `orders(created_at)`, `inventory_items(branch_id)` |
+| 6   | `orders.order_number`                 | Unique string             | Nên có format: `BAE-{branch_code}-{YYYYMMDD}-{seq}`                                                   |
+| 7   | Không có `soft delete`                | Hard delete               | Thêm `deleted_at` cho `products`, `vouchers`, `users`                                                 |
 
 ---
 
@@ -483,4 +485,4 @@ voucher_usages → vouchers + users + orders
 
 ---
 
-*Tài liệu này được tổng hợp dựa trên phân tích giao diện hiện tại tại `interface/src/app/components/` và yêu cầu nghiệp vụ từ `ba-anh-em-app-design.md`.*
+_Tài liệu này được tổng hợp dựa trên phân tích giao diện hiện tại tại `interface/src/app/components/` và yêu cầu nghiệp vụ từ `ba-anh-em-app-design.md`._

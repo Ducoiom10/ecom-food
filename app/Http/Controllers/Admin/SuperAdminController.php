@@ -3,16 +3,33 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AuditLog;
-use App\Models\Branch;
-use App\Models\Order;
-use App\Models\PushCampaign;
-use App\Models\User;
-use App\Models\Voucher;
+use App\Models\Order\Order;
+use App\Models\Promotion\PushCampaign;
+use App\Models\Promotion\Voucher;
+use App\Models\System\AuditLog;
+use App\Models\System\Branch;
+use App\Models\System\RolePermission;
 use Illuminate\Http\Request;
 
 class SuperAdminController extends Controller
 {
+    private function defaultRolePerms(): array
+    {
+        return [
+            'super_admin'    => ['view_revenue', 'manage_menu', 'manage_vouchers', 'view_orders', 'update_orders', 'manage_staff', 'refund_orders', 'view_audit_log'],
+            'branch_manager' => ['view_revenue', 'manage_menu', 'view_orders', 'update_orders', 'refund_orders'],
+            'coordinator'    => ['view_orders', 'update_orders'],
+            'kitchen_staff'  => ['view_orders', 'update_orders'],
+            'support'        => ['view_orders', 'refund_orders'],
+        ];
+    }
+
+    private function getRolePerms(): array
+    {
+        $dbMatrix = RolePermission::matrix();
+        return empty($dbMatrix) ? $this->defaultRolePerms() : $dbMatrix;
+    }
+
     public function index()
     {
         $totalRevenue = Order::where('status', 'completed')->sum('grand_total');
@@ -21,32 +38,28 @@ class SuperAdminController extends Controller
             ->selectRaw("strftime('%w', created_at) as day, SUM(grand_total) as revenue")
             ->groupByRaw("strftime('%w', created_at)")
             ->get()
-            ->map(fn($r) => ['day' => ['CN','T2','T3','T4','T5','T6','T7'][$r->day] ?? '?', 'revenue' => $r->revenue]);
+            ->map(fn($r) => ['day' => ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][$r->day] ?? '?', 'revenue' => $r->revenue]);
 
-        return view('admin.super', [
+        $permissions = [
+            ['key' => 'view_revenue',    'label' => 'Xem doanh thu'],
+            ['key' => 'manage_menu',     'label' => 'Quản lý thực đơn'],
+            ['key' => 'manage_vouchers', 'label' => 'Quản lý voucher'],
+            ['key' => 'view_orders',     'label' => 'Xem đơn hàng'],
+            ['key' => 'update_orders',   'label' => 'Cập nhật đơn hàng'],
+            ['key' => 'manage_staff',    'label' => 'Quản lý nhân viên'],
+            ['key' => 'refund_orders',   'label' => 'Hoàn tiền'],
+            ['key' => 'view_audit_log',  'label' => 'Xem audit log'],
+        ];
+
+        return view('admin.dashboard.super', [
             'activeTab'    => request('tab', 'analytics'),
             'totalRevenue' => $totalRevenue,
             'revenueData'  => $revenueData,
             'branches'     => Branch::all(),
             'vouchers'     => Voucher::latest()->get(),
             'roles'        => ['super_admin', 'branch_manager', 'coordinator', 'kitchen_staff', 'support'],
-            'permissions'  => [
-                ['key' => 'view_revenue',    'label' => 'Xem doanh thu'],
-                ['key' => 'manage_menu',     'label' => 'Quản lý thực đơn'],
-                ['key' => 'manage_vouchers', 'label' => 'Quản lý voucher'],
-                ['key' => 'view_orders',     'label' => 'Xem đơn hàng'],
-                ['key' => 'update_orders',   'label' => 'Cập nhật đơn hàng'],
-                ['key' => 'manage_staff',    'label' => 'Quản lý nhân viên'],
-                ['key' => 'refund_orders',   'label' => 'Hoàn tiền'],
-                ['key' => 'view_audit_log',  'label' => 'Xem audit log'],
-            ],
-            'rolePerms'    => [
-                'super_admin'    => ['view_revenue','manage_menu','manage_vouchers','view_orders','update_orders','manage_staff','refund_orders','view_audit_log'],
-                'branch_manager' => ['view_revenue','manage_menu','view_orders','update_orders','refund_orders'],
-                'coordinator'    => ['view_orders','update_orders'],
-                'kitchen_staff'  => ['view_orders','update_orders'],
-                'support'        => ['view_orders','refund_orders'],
-            ],
+            'permissions'  => $permissions,
+            'rolePerms'    => $this->getRolePerms(),
             'auditLogs'    => AuditLog::with('user')->latest()->take(50)->get(),
         ]);
     }
@@ -72,7 +85,23 @@ class SuperAdminController extends Controller
 
     public function updatePerm(Request $request)
     {
-        // TODO: Sprint 3 — lưu permissions vào DB
-        return back();
+        $request->validate([
+            'role'       => 'required|string|in:super_admin,branch_manager,coordinator,kitchen_staff,support',
+            'permission' => 'required|string',
+            'allowed'    => 'required|boolean',
+        ]);
+
+        RolePermission::updateOrCreate(
+            ['role' => $request->role, 'permission' => $request->permission],
+            ['is_allowed' => $request->allowed]
+        );
+
+        AuditLog::record('UPDATE', 'role_permissions', 0, null, [
+            'role'       => $request->role,
+            'permission' => $request->permission,
+            'is_allowed' => $request->allowed,
+        ]);
+
+        return response()->json(['ok' => true]);
     }
 }

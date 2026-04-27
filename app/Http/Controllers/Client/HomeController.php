@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
-use App\Models\Combo;
-use App\Models\Product;
+use App\Models\Catalog\Combo;
+use App\Models\Catalog\Product;
 
 class HomeController extends Controller
 {
@@ -18,8 +17,8 @@ class HomeController extends Controller
             ->get();
 
         $combos  = Combo::where('is_active', true)->get();
-        $reviews = \App\Data\MockData::reviews(); // TODO: thay bằng DB
+        $reviews = \App\Data\MockData::reviews();
 
-        return view('client.home', compact('menuItems', 'combos', 'reviews'));
+        return view('client.home.index', compact('menuItems', 'combos', 'reviews'));
     }
 }
