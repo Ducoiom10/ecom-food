@@ -12,11 +12,20 @@ import { SmartPrepPage } from "./components/admin/SmartPrepPage";
 import { DispatchPage } from "./components/admin/DispatchPage";
 import { BranchDashboard } from "./components/admin/BranchDashboard";
 import { SuperAdminPage } from "./components/admin/SuperAdminPage";
+import { CartProvider } from "./context/CartContext";
+
+function ClientWrapper() {
+  return (
+    <CartProvider>
+      <Layout />
+    </CartProvider>
+  );
+}
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    Component: Layout,
+    Component: ClientWrapper,
     children: [
       { index: true, Component: HomePage },
       { path: "menu", Component: MenuPage },
@@ -40,3 +49,4 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+

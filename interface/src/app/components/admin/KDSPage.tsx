@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { WifiOff, Wifi, RefreshCw, Check, ChefHat, Clock, AlertTriangle, Zap, Database, Upload, Bell, Eye, EyeOff, Package } from "lucide-react";
+import { WifiOff, Wifi, RefreshCw, Check, ChefHat, Clock, AlertTriangle, Zap, Database, Upload, Bell, Package, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 import { KDS_ORDERS, INVENTORY_ITEMS } from "../../data/mockData";
 
 type OrderStatus = "todo" | "cooking" | "ready" | "done";
@@ -50,9 +51,14 @@ export function KDSPage() {
   const [showOfflineBanner, setShowOfflineBanner] = useState(false);
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Timer tick for elapsed time
+  // Timer tick for elapsed time — CẬP NHẬT elapsed cho tất cả orders
   useEffect(() => {
-    const interval = setInterval(() => setElapsedTick((t) => t + 1), 30000);
+    const interval = setInterval(() => {
+      setElapsedTick((t) => t + 1);
+      setOrders((prev) =>
+        prev.map((o) => ({ ...o, elapsed: o.elapsed + 1 }))
+      );
+    }, 60000); // Tăng 1 phút mỗi phút
     return () => clearInterval(interval);
   }, []);
 
@@ -78,9 +84,9 @@ export function KDSPage() {
     };
   }, [syncQueue]);
 
-  // Simulate new order arriving every 45s
+  // Simulate new order arriving every 45s — chạy liên tục
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const interval = setInterval(() => {
       const newOrder: KDSOrder = {
         id: `ORD-${Date.now().toString().slice(-3)}`,
         table: Math.random() > 0.5 ? `Bàn ${Math.floor(Math.random() * 12) + 1}` : "Ship - Khách mới",
@@ -94,7 +100,7 @@ export function KDSPage() {
       setNewOrderAlert(true);
       setTimeout(() => setNewOrderAlert(false), 4000);
     }, 45000);
-    return () => clearTimeout(timer);
+    return () => clearInterval(interval);
   }, []);
 
   const processSyncQueue = useCallback(() => {
@@ -123,18 +129,30 @@ export function KDSPage() {
       prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
     );
 
+    const statusLabels: Record<OrderStatus, string> = {
+      todo: "Cần làm",
+      cooking: "Đang nấu",
+      ready: "Sẵn sàng",
+      done: "Hoàn thành",
+    };
+
+    // Toast feedback
+    if (typeof window !== "undefined") {
+      // Simple toast using a custom event or just skip if sonner not available
+      // We'll use a small inline notification instead
+    }
+
     const queueItem: SyncQueueItem = {
       id: `sync-${Date.now()}`,
       orderId,
-      action: `Chuyển trạng thái → ${newStatus}`,
+      action: `Chuyển trạng thái → ${statusLabels[newStatus]}`,
       newStatus,
       timestamp: Date.now(),
-      synced: isOnline, // If online, mark synced immediately
+      synced: isOnline,
     };
     setSyncQueue((prev) => [...prev, queueItem]);
 
     if (!isOnline) {
-      // Save to IndexedDB/localStorage simulation
       const pending = JSON.parse(localStorage.getItem("kds_pending_sync") || "[]");
       pending.push(queueItem);
       localStorage.setItem("kds_pending_sync", JSON.stringify(pending));

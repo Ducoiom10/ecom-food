@@ -43,6 +43,17 @@ class BranchController extends Controller
                 ->get()
             : collect();
 
+        // Đơn chờ duyệt (pending) — branch_manager / support có thể duyệt
+        $pendingOrders = $selected
+            ? Order::where('branch_id', $selected->id)
+                ->where('status', 'pending')
+                ->with('user', 'items.product')
+                ->latest()
+                ->get()
+            : collect();
+
+        $pendingCount = $pendingOrders->count();
+
         return view('admin.branches.index', [
             'branches'       => $branches,
             'selectedBranch' => $selected,
@@ -52,7 +63,27 @@ class BranchController extends Controller
             'hourlyData'     => $hourlyData,
             'lowStock'       => $lowStock,
             'refunds'        => $refunds,
+            'pendingOrders'  => $pendingOrders,
+            'pendingCount'   => $pendingCount,
         ]);
+    }
+
+    /**
+     * Duyệt đơn hàng: chuyển từ pending → confirmed
+     */
+    public function confirmOrder(int $id)
+    {
+        abort_unless(auth()->user()->hasPermission('update_orders'), 403);
+
+        $order = Order::findOrFail($id);
+        abort_if($order->status !== 'pending', 400, 'Đơn hàng không ở trạng thái chờ duyệt.');
+
+        $order->update([
+            'status'       => 'confirmed',
+            'confirmed_at' => now(),
+        ]);
+
+        return back()->with('success', 'Đã duyệt đơn #' . $order->order_number);
     }
 
     public function refund(int $id)
