@@ -80,7 +80,7 @@ export function AdminLayout() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto flex flex-col">
           <Outlet />
         </div>
       </main>

@@ -13,7 +13,6 @@
       <p class="text-red-200 text-xs">Đang hoạt động ở chế độ Offline · Hành động sẽ được sync khi có mạng trở lại</p>
     </div>
     <div class="bg-red-700 text-white text-xs font-black px-3 py-1.5 rounded-lg border border-red-400 animate-pulse">OFFLINE MODE</div>
-  </div>
 
   {{-- Sub-header --}}
   <div class="bg-[#1A1A1A] border-b-2 border-[#333] px-4 lg:px-6 py-3 flex items-center justify-between flex-shrink-0">
@@ -35,7 +34,6 @@
           class="px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-white transition-all">📦 Kho</button>
       </div>
       <div class="text-gray-400 text-xs font-mono" id="kds-clock">{{ now()->format('H:i') }}</div>
-    </div>
   </div>
 
   {{-- KANBAN VIEW --}}
@@ -44,9 +42,10 @@
 
       @php
         $columns = [
-          ['statuses'=>['pending','confirmed'], 'title'=>'Cần Làm',  'color'=>'bg-green-500',  'action'=>'Bắt đầu nấu',    'actionColor'=>'bg-green-500 hover:bg-green-600 text-white'],
-          ['statuses'=>['preparing'],           'title'=>'Đang Nấu', 'color'=>'bg-yellow-500', 'action'=>'Xong! Giao bàn', 'actionColor'=>'bg-yellow-500 hover:bg-yellow-600 text-black'],
-          ['statuses'=>['ready'],               'title'=>'Sẵn Sàng', 'color'=>'bg-blue-500',   'action'=>'Đã giao ✓',      'actionColor'=>'bg-blue-500 hover:bg-blue-600 text-white'],
+          ['statuses'=>['pending'],    'title'=>'Chờ Duyệt', 'color'=>'bg-orange-400', 'action'=>'Duyệt đơn ✓',      'actionColor'=>'bg-orange-500 hover:bg-orange-600 text-white', 'route'=>'admin.kds.confirm'],
+          ['statuses'=>['confirmed'],  'title'=>'Cần Làm',  'color'=>'bg-green-500',  'action'=>'Bắt đầu nấu',    'actionColor'=>'bg-green-500 hover:bg-green-600 text-white',    'route'=>'admin.kds.move'],
+          ['statuses'=>['preparing'],  'title'=>'Đang Nấu', 'color'=>'bg-yellow-500', 'action'=>'Xong! Giao bàn', 'actionColor'=>'bg-yellow-500 hover:bg-yellow-600 text-black',  'route'=>'admin.kds.move'],
+          ['statuses'=>['ready'],      'title'=>'Sẵn Sàng', 'color'=>'bg-blue-500',   'action'=>'Đã giao ✓',      'actionColor'=>'bg-blue-500 hover:bg-blue-600 text-white',     'route'=>'admin.kds.move'],
         ];
       @endphp
 
@@ -64,26 +63,29 @@
         <div class="flex-1 overflow-y-auto p-3 space-y-3">
           @forelse($colOrders as $order)
           <div class="bg-[#1A1A1A] border-2 rounded-2xl overflow-hidden transition-all
-            {{ $order->priority==='high' ? 'border-[#FF6B35] shadow-[4px_4px_0px_#FF6B35]' : ($order->elapsed_minutes>20 ? 'border-red-500 shadow-[4px_4px_0px_#ef4444]' : 'border-[#333] shadow-[4px_4px_0px_#333]') }}">
+            {{ $order->priority==='high' ? 'border-[#FF6B35] shadow-[4px_4px_0px_#FF6B35]' : 'border-[#333] shadow-[4px_4px_0px_#333]' }}">
 
             <div class="px-4 py-3 border-b border-[#333] flex items-center justify-between">
               <div>
                 <div class="text-white font-black text-base">{{ $order->order_number }}</div>
                 <div class="text-gray-400 text-xs">{{ $order->delivery_mode === 'delivery' ? '🛵 Giao hàng' : '🏪 Tự lấy' }}</div>
-              </div>
               <div class="text-right">
+                @if($order->status !== 'pending')
                 <div class="font-black text-xl {{ $order->elapsed_minutes<10 ? 'text-green-400' : ($order->elapsed_minutes<20 ? 'text-yellow-400' : 'text-red-400') }}"
                   data-confirmed-at="{{ ($order->confirmed_at ?? $order->created_at)->toISOString() }}">
                   {{ $order->elapsed_minutes }}m
                 </div>
+                @endif
                 @if($order->priority==='high')
                 <div class="text-[#FF6B35] text-[10px] font-black">⚡ ƯU TIÊN</div>
                 @endif
-                @if($order->elapsed_minutes>20)
+                @if($order->status !== 'pending' && $order->elapsed_minutes>20)
                 <div class="text-red-400 text-[10px] font-black">⚠️ TRỄ!</div>
                 @endif
+                @if($order->status === 'pending')
+                <div class="text-orange-400 text-[10px] font-black">⏳ CHỜ DUYỆT</div>
+                @endif
               </div>
-            </div>
 
             <div class="px-4 py-3 space-y-2">
               @foreach($order->items as $item)
@@ -98,19 +100,17 @@
                   <div class="text-orange-400 text-xs font-bold mt-0.5">⚠️ {{ $item->note }}</div>
                   @endif
                 </div>
-              </div>
               @endforeach
             </div>
 
             <div class="px-4 pb-4">
-              <form action="{{ route('admin.kds.move', $order->id) }}" method="POST">
+              <form action="{{ route($col['route'], $order->id) }}" method="POST">
                 @csrf
                 <button type="submit" class="w-full py-3 rounded-xl font-black text-sm border-2 border-[#444] transition-all {{ $col['actionColor'] }}">
                   {{ $col['action'] }}
                 </button>
               </form>
             </div>
-          </div>
           @empty
           <div class="text-center py-12 text-gray-600">
             <div class="text-5xl mb-2 opacity-30">👨‍🍳</div>
@@ -118,11 +118,9 @@
           </div>
           @endforelse
         </div>
-      </div>
       @endforeach
 
     </div>
-  </div>
 
   {{-- INVENTORY VIEW --}}
   <div id="view-inventory-panel" class="flex-1 overflow-y-auto p-4 lg:p-6 hidden">
@@ -146,7 +144,6 @@
               <div class="h-2 bg-[#333] rounded-full overflow-hidden">
                 <div class="h-full rounded-full {{ $item->current_qty <= 0 ? 'bg-red-500' : ($item->isLow() ? 'bg-yellow-500' : 'bg-green-500') }}"
                   style="width: {{ $item->max_qty > 0 ? min(100, ($item->current_qty / $item->max_qty) * 100) : 0 }}%"></div>
-              </div>
             </div>
             <form action="{{ route('admin.kds.inventory', $item->id) }}" method="POST">
               @csrf @method('PATCH')
@@ -156,17 +153,13 @@
               </button>
             </form>
           </div>
-        </div>
         @empty
         <div class="col-span-2 text-center py-8 text-gray-600">
           <p class="text-sm">Chưa có dữ liệu kho</p>
         </div>
         @endforelse
       </div>
-    </div>
   </div>
-
-</div>
 @endsection
 
 @push('scripts')
@@ -205,7 +198,7 @@ setInterval(() => {
   document.getElementById('kds-clock').textContent = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'});
 }, 1000);
 
-// Auto-refresh elapsed minutes mỗi 30s (không reload page)
+// Auto-refresh elapsed minutes mỗi 30s
 setInterval(() => {
   document.querySelectorAll('[data-confirmed-at]').forEach(el => {
     const confirmedAt = new Date(el.dataset.confirmedAt);
@@ -218,7 +211,7 @@ setInterval(() => {
   });
 }, 30000);
 
-// Auto-reload kanban mỗi 60s để lấy đơn mới
+// Auto-reload kanban mỗi 60s
 setInterval(() => {
   if (document.getElementById('view-kanban-panel') && !document.getElementById('view-kanban-panel').classList.contains('hidden')) {
     window.location.reload();
