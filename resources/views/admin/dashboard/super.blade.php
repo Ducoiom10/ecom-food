@@ -24,9 +24,9 @@
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         @foreach([
           ['label'=>'Tổng doanh thu','value'=>number_format($totalRevenue??0).'đ','icon'=>'💰','color'=>'text-green-400','bg'=>'border-green-700/30'],
-          ['label'=>'Đơn hôm nay',   'value'=>\App\Models\Order::whereDate('created_at',today())->count().' đơn','icon'=>'⚡','color'=>'text-orange-400','bg'=>'border-orange-700/30'],
-          ['label'=>'Người dùng',    'value'=>\App\Models\User::where('role','customer')->count().' người','icon'=>'👥','color'=>'text-blue-400','bg'=>'border-blue-700/30'],
-          ['label'=>'Chi nhánh',     'value'=>\App\Models\Branch::where('status','open')->count().' mở','icon'=>'🏪','color'=>'text-purple-400','bg'=>'border-purple-700/30'],
+          ['label'=>'Đơn hôm nay',   'value'=>\App\Models\Order\Order::whereDate('created_at',today())->count().' đơn','icon'=>'⚡','color'=>'text-orange-400','bg'=>'border-orange-700/30'],
+          ['label'=>'Người dùng',    'value'=>\App\Models\User\User::where('role','customer')->count().' người','icon'=>'👥','color'=>'text-blue-400','bg'=>'border-blue-700/30'],
+          ['label'=>'Chi nhánh',     'value'=>\App\Models\System\Branch::where('status','open')->count().' mở','icon'=>'🏪','color'=>'text-purple-400','bg'=>'border-purple-700/30'],
         ] as $kpi)
         <div class="bg-[#1A1A1A] border-2 {{ $kpi['bg'] }} rounded-2xl p-3 lg:p-4">
           <div class="text-xl lg:text-2xl mb-2">{{ $kpi['icon'] }}</div>
@@ -58,7 +58,7 @@
           <h3 class="text-white font-black mb-4 text-sm">So sánh chi nhánh</h3>
           <div class="space-y-3">
             @foreach($branches ?? [] as $branch)
-            @php $branchRevenue = \App\Models\Order::where('branch_id',$branch->id)->where('status','completed')->sum('grand_total'); @endphp
+            @php $branchRevenue = \App\Models\Order\Order::where('branch_id',$branch->id)->where('status','completed')->sum('grand_total'); @endphp
             <div>
               <div class="flex items-center justify-between mb-1">
                 <span class="text-gray-300 text-xs">{{ str_replace('Chi nhánh ','',$branch->name) }}</span>

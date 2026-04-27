@@ -101,7 +101,7 @@ class GroupOrderController extends Controller
                 'user_id'        => auth()->id(),
                 'branch_id'      => $room->branch_id,
                 'status'         => 'pending',
-                'delivery_mode'  => 'dine_in',
+                'delivery_mode'  => 'pickup',
                 'payment_method' => 'cash',
                 'subtotal'       => 0,
                 'grand_total'    => 0,
@@ -124,7 +124,7 @@ class GroupOrderController extends Controller
 
     public function lock(string $code)
     {
-        GroupRoom::where('room_code', $code)->firstOrFail()->update(['is_locked' => true, 'status' => 'locked']);
+        GroupRoom::where('room_code', $code)->firstOrFail()->update(['is_locked' => true, 'status' => 'completed']);
         return redirect()->route('client.split-bill', $code);
     }
 

@@ -118,6 +118,18 @@ class CartController extends Controller
 
     public function checkout()
     {
+        $cart     = session('cart', []);
+        $subtotal = collect($cart)->sum(fn($i) => $i['price'] * $i['quantity']);
+        $vouchers = Voucher::where('is_active', true)
+            ->where(fn($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->whereRaw('max_uses IS NULL OR used_count < max_uses')
+            ->get();
+        $cartProductIds = collect($cart)->pluck('product_id')->filter()->values();
+        $upsell = Product::whereNotIn('id', $cartProductIds)
+            ->where('is_active', true)
+            ->inRandomOrder()
+            ->first();
+
         return view('client.cart.checkout', compact('cart', 'subtotal', 'vouchers', 'upsell'));
     }
 
