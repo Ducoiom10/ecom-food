@@ -9,8 +9,10 @@ import {
   Zap,
   Plus,
   CheckCircle,
+  Pencil,
+  X,
 } from "lucide-react";
-import { MENU_ITEMS, formatPrice } from "../../data/mockData";
+import { MENU_ITEMS, formatPrice, type MenuItem } from "../../data/mockData";
 import { useCartContext } from "../../context/CartContext";
 import { useBranch } from "../../hooks/useBranch";
 import {
@@ -18,6 +20,18 @@ import {
   estimateDeliveryTime,
 } from "../../utils/distance";
 import { toast } from "sonner";
+
+// Sample toppings available - in real app would come from API based on product
+const AVAILABLE_TOPPINGS = [
+  { id: "trung_poacher", name: "Trứng lòng đào", price: 5000 },
+  { id: "trung_luoc", name: "Trứng luộc", price: 3000 },
+  { id: "thit_bo", name: "Thịt bò", price: 15000 },
+  { id: "rau_muong", name: "Rau muống", price: 5000 },
+  { id: "nam", name: "Nấm", price: 5000 },
+  { id: "tauhu", name: "Tàu hủ", price: 3000 },
+  { id: "bot_chien", name: "Bột chiên", price: 8000 },
+  { id: "kimchi", name: "Kim chi", price: 5000 },
+];
 
 const VOUCHERS = [
   {
@@ -57,7 +71,9 @@ export function CartPage() {
     "delivery"
   );
   const [paymentMethod, setPaymentMethod] = useState("momo");
-  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [editingToppings, setEditingToppings] = useState<string[]>([]);
 
   const shippingFee =
     deliveryMethod === "pickup" ? 0 : calculateShippingFee(distance);
@@ -107,7 +123,7 @@ export function CartPage() {
   const upsellItem = MENU_ITEMS.find((m) => m.id === "8");
   const [showUpsell, setShowUpsell] = useState(true);
 
-  const handleAddUpsell = () => {
+const handleAddUpsell = () => {
     if (upsellItem) {
       addItem({
         menuItemId: upsellItem.id,
@@ -117,6 +133,55 @@ export function CartPage() {
       });
       toast.success(`Đã thêm ${upsellItem.name}`);
     }
+  };
+
+  // Open edit modal for a cart item
+  const openEditModal = (itemId: string) => {
+    const item = cart.find((c) => c.id === itemId);
+    if (item) {
+      setEditingItem(itemId);
+      setEditingToppings(item.toppings || []);
+    }
+  };
+
+  // Toggle topping in edit mode
+  const toggleTopping = (toppingId: string) => {
+    setEditingToppings((prev) =>
+      prev.includes(toppingId)
+        ? prev.filter((id) => id !== toppingId)
+        : [...prev, toppingId]
+    );
+  };
+
+  // Save toppings change
+  const saveToppings = () => {
+    if (!editingItem) return;
+
+    const item = cart.find((c) => c.id === editingItem);
+    if (!item) return;
+
+    // Calculate additional price from toppings
+    const toppingPrice = editingToppings.reduce((sum, tid) => {
+      const topping = AVAILABLE_TOPPINGS.find((t) => t.id === tid);
+      return sum + (topping?.price || 0);
+    }, 0);
+
+    // Remove old item and add new with updated toppings
+    removeItem(editingItem);
+    addItem({
+      menuItemId: item.menuItemId,
+      name: item.name,
+      image: item.image,
+      price: item.price + toppingPrice - (item.toppings?.reduce((s, tid) => {
+        const t = AVAILABLE_TOPPINGS.find((tp) => tp.id === tid);
+        return s + (t?.price || 0);
+      }, 0) || 0),
+      toppings: editingToppings,
+    });
+
+    toast.success("Đã cập nhật món");
+    setEditingItem(null);
+    setEditingToppings([]);
   };
 
   if (cart.length === 0 && !showCheckoutModal) {
@@ -193,13 +258,14 @@ export function CartPage() {
           </button>
         </div>
 
-        {/* Cart items */}
-        <div className="space-y-3 mb-4">
-          {cart.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[3px_3px_0px_#1C1C1C] overflow-hidden flex"
-            >
+{/* Cart items - Scrollable container */}
+        <div className="mb-4 max-h-[50vh] overflow-y-auto rounded-2xl border-2 border-[#1C1C1C]">
+          <div className="space-y-0">
+            {cart.map((item) => (
+              <div
+                key={item.id}
+                className="bg-white border-b-2 border-[#1C1C1C] last:border-b-0 shadow-[3px_3px_0px_#1C1C1C] overflow-hidden flex"
+              >
               <img
                 src={item.image}
                 alt={item.name}
@@ -244,17 +310,25 @@ export function CartPage() {
                     >
                       <Plus size={12} />
                     </button>
-                    <button
+<button
                       onClick={() => removeItem(item.id)}
                       className="w-7 h-7 rounded-lg border-2 border-red-200 bg-red-50 text-red-500 flex items-center justify-center"
                     >
                       <Trash2 size={12} />
+                    </button>
+                    <button
+                      onClick={() => openEditModal(item.id)}
+                      className="w-7 h-7 rounded-lg border-2 border-[#FFD23F] bg-[#FFD23F] text-[#1C1C1C] flex items-center justify-center"
+                      title="Sửa/Đổi món"
+                    >
+                      <Pencil size={12} />
                     </button>
                   </div>
                 </div>
               </div>
             </div>
           ))}
+          </div>
         </div>
 
         {/* Upsell */}
@@ -494,7 +568,7 @@ export function CartPage() {
         </p>
       </div>
 
-      {/* Checkout Modal */}
+{/* Checkout Modal */}
       {showCheckoutModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[4px_4px_0px_#1C1C1C] p-6 w-full max-w-sm">
@@ -541,6 +615,71 @@ export function CartPage() {
                 className="flex-1 py-3 rounded-xl bg-[#FF6B35] text-white font-black text-sm border-2 border-[#1C1C1C] shadow-[2px_2px_0px_#1C1C1C]"
               >
                 Xác nhận ✓
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Toppings Modal */}
+      {editingItem && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white border-2 border-[#1C1C1C] rounded-2xl shadow-[4px_4px_0px_#1C1C1C] p-4 w-full max-w-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-black text-[#1C1C1C] text-lg">Sửa/Đổi món</h3>
+              <button
+                onClick={() => setEditingItem(null)}
+                className="w-8 h-8 rounded-full border-2 border-gray-200 flex items-center justify-center"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mb-3">Chọn thêm topping:</p>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {AVAILABLE_TOPPINGS.map((topping) => (
+                <div
+                  key={topping.id}
+                  onClick={() => toggleTopping(topping.id)}
+                  className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                    editingToppings.includes(topping.id)
+                      ? "border-[#FF6B35] bg-orange-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        editingToppings.includes(topping.id)
+                          ? "bg-[#FF6B35] border-[#FF6B35]"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {editingToppings.includes(topping.id) && (
+                        <CheckCircle size={12} className="text-white" />
+                      )}
+                    </div>
+                    <span className="font-bold text-sm text-[#1C1C1C]">
+                      {topping.name}
+                    </span>
+                  </div>
+                  <span className="font-black text-[#FF6B35] text-sm">
+                    +{formatPrice(topping.price)}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => setEditingItem(null)}
+                className="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-bold text-sm"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={saveToppings}
+                className="flex-1 py-3 rounded-xl bg-[#FF6B35] text-white font-black text-sm border-2 border-[#1C1C1C] shadow-[2px_2px_0px_#1C1C1C]"
+              >
+                Lưu ✓
               </button>
             </div>
           </div>

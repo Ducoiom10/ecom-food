@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SendPushRequest;
+use App\Http\Requests\Admin\UpdatePermissionRequest;
 use App\Models\Order\Order;
 use App\Models\Promotion\PushCampaign;
 use App\Models\Promotion\Voucher;
 use App\Models\System\AuditLog;
 use App\Models\System\Branch;
 use App\Models\System\RolePermission;
-use Illuminate\Http\Request;
 
 class SuperAdminController extends Controller
 {
@@ -35,8 +36,8 @@ class SuperAdminController extends Controller
         $totalRevenue = Order::where('status', 'completed')->sum('grand_total');
 
         $revenueData = Order::where('status', 'completed')
-            ->selectRaw("strftime('%w', created_at) as day, SUM(grand_total) as revenue")
-            ->groupByRaw("strftime('%w', created_at)")
+            ->selectRaw("DAYOFWEEK(created_at) - 1 as day, SUM(grand_total) as revenue")
+            ->groupByRaw("DAYOFWEEK(created_at) - 1")
             ->get()
             ->map(fn($r) => ['day' => ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][$r->day] ?? '?', 'revenue' => $r->revenue]);
 
@@ -64,14 +65,8 @@ class SuperAdminController extends Controller
         ]);
     }
 
-    public function sendPush(Request $request)
+    public function sendPush(SendPushRequest $request)
     {
-        $request->validate([
-            'title'   => 'required|string',
-            'body'    => 'required|string',
-            'segment' => 'required|in:all,abandoned_cart,inactive_7d,vip',
-        ]);
-
         PushCampaign::create([
             'title'      => $request->title,
             'body'       => $request->body,
@@ -83,14 +78,8 @@ class SuperAdminController extends Controller
         return back()->with('success', 'Đã gửi push notification.');
     }
 
-    public function updatePerm(Request $request)
+    public function updatePerm(UpdatePermissionRequest $request)
     {
-        $request->validate([
-            'role'       => 'required|string|in:super_admin,branch_manager,coordinator,kitchen_staff,support',
-            'permission' => 'required|string',
-            'allowed'    => 'required|boolean',
-        ]);
-
         RolePermission::updateOrCreate(
             ['role' => $request->role, 'permission' => $request->permission],
             ['is_allowed' => $request->allowed]

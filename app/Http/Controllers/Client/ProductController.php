@@ -20,6 +20,8 @@ class ProductController extends Controller
             ->take(2)
             ->get();
 
+        // dd($product, $related);
+
         return view('client.products.detail', compact('product', 'related'));
     }
 }

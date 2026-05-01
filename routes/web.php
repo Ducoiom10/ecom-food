@@ -50,6 +50,7 @@ Route::prefix('')->name('client.')->group(function () {
         Route::patch('/cart/{id}',   [CartController::class, 'updateQty'])->name('cart.update');
         Route::delete('/cart/{id}',  [CartController::class, 'remove'])->name('cart.remove');
         Route::post('/cart/voucher', [CartController::class, 'applyVoucher'])->name('cart.voucher');
+        Route::get('/cart-summary',  [CartController::class, 'index'])->name('cart');
         Route::get('/checkout',      [CartController::class, 'checkout'])->name('checkout');
         Route::post('/checkout',     [CartController::class, 'placeOrder'])->name('checkout.post');
 

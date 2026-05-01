@@ -11,17 +11,17 @@
                 $tabs = [
                     ['id' => 'analytics', 'label' => 'Analytics', 'icon' => '📊', 'perm' => 'view_revenue'],
                     ['id' => 'campaigns', 'label' => 'Campaigns', 'icon' => '🏷️', 'perm' => 'send_push'],
-                    ['id' => 'roles',     'label' => 'RBAC',      'icon' => '🔒', 'perm' => 'manage_permissions'],
-                    ['id' => 'audit',     'label' => 'Audit',     'icon' => '📋', 'perm' => 'view_audit_log'],
+                    ['id' => 'roles', 'label' => 'RBAC', 'icon' => '🔒', 'perm' => 'manage_permissions'],
+                    ['id' => 'audit', 'label' => 'Audit', 'icon' => '📋', 'perm' => 'view_audit_log'],
                 ];
             @endphp
             @foreach ($tabs as $tab)
-                @if(auth()->user()->hasPermission($tab['perm']))
-                <a href="{{ route('admin.super', ['tab' => $tab['id']]) }}"
-                    class="flex items-center gap-1.5 px-4 lg:px-5 py-3 text-xs lg:text-sm font-black border-r border-[#333] transition-all whitespace-nowrap flex-shrink-0
+                @if (auth()->user()->hasPermission($tab['perm']))
+                    <a href="{{ route('admin.super', ['tab' => $tab['id']]) }}"
+                        class="flex items-center gap-1.5 px-4 lg:px-5 py-3 text-xs lg:text-sm font-black border-r border-[#333] transition-all whitespace-nowrap flex-shrink-0
              {{ ($activeTab ?? 'analytics') === $tab['id'] ? 'bg-[#FF6B35] text-white' : 'text-gray-400 hover:text-white' }}">
-                    {{ $tab['icon'] }} {{ $tab['label'] }}
-                </a>
+                        {{ $tab['icon'] }} {{ $tab['label'] }}
+                    </a>
                 @endif
             @endforeach
         </div>
@@ -37,6 +37,7 @@
                                 <div class="text-xl lg:text-2xl mb-2">{{ $kpi['icon'] }}</div>
                                 <div class="text-white font-black text-lg lg:text-2xl">{{ $kpi['value'] }}</div>
                                 <div class="text-gray-500 text-xs mt-0.5">{{ $kpi['label'] }}</div>
+                            </div>
                         @endforeach
                     </div>
 
@@ -58,6 +59,7 @@
                                         liệu</div>
                                 @endforelse
                             </div>
+                        </div>
 
                         {{-- Branch comparison --}}
                         <div class="bg-[#1A1A1A] border-2 border-[#333] rounded-2xl p-4">
@@ -74,11 +76,15 @@
                                         </div>
                                         <div class="h-3 bg-[#333] rounded-full overflow-hidden">
                                             <div class="h-full bg-gradient-to-r from-[#FF6B35] to-[#FFD23F] rounded-full"
-                                                style="width: {{ min(100, ($branchRevenue / max(1, 16000000)) * 100) }}%"></div>
+                                                style="width: {{ min(100, ($branchRevenue / max(1, 16000000)) * 100) }}%">
+                                            </div>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
+                        </div>
                     </div>
+                </div>
             @endif
 
             {{-- CAMPAIGNS --}}
@@ -89,56 +95,59 @@
                     </div>
 
                     {{-- Vouchers table --}}
-                    @if(auth()->user()->hasPermission('manage_vouchers'))
-                    <div class="bg-[#1A1A1A] border-2 border-[#333] rounded-2xl overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full min-w-[600px]">
-                                <thead class="bg-[#222] border-b border-[#333]">
-                                    <tr>
-                                        @foreach (['Mã', 'Giảm giá', 'Loại', 'Đã dùng', 'Hạn sử dụng', 'Trạng thái'] as $h)
-                                            <th
-                                                class="text-left text-gray-400 text-xs font-black px-4 py-3 uppercase tracking-wide">
-                                                {{ $h }}</th>
-                                        @endforeach
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($vouchers ?? [] as $v)
-                                        <tr class="border-b border-[#222] hover:bg-[#1D1D1D]">
-                                            <td class="px-4 py-3 text-white font-black text-sm">{{ $v->code }}</td>
-                                            <td class="px-4 py-3 text-[#FFD23F] font-black">
-                                                {{ $v->type === 'flat' ? number_format($v->value) . 'đ' : ($v->type === 'percent' ? $v->value . '%' : 'Free ship') }}
-                                            </td>
-                                            <td class="px-4 py-3 text-gray-400 text-sm">
-                                                {{ $v->type === 'flat' ? 'Cố định' : ($v->type === 'percent' ? 'Phần trăm' : 'Free ship') }}
-                                            </td>
-                                            <td class="px-4 py-3">
-                                                <div class="text-white text-sm font-bold">
-                                                    {{ $v->used_count }}/{{ $v->max_uses ?? '∞' }}</div>
-                                                @if ($v->max_uses)
-                                                    <div class="h-1.5 bg-[#333] rounded-full mt-1 w-20">
-                                                        <div class="h-full bg-[#FF6B35] rounded-full"
-                                                            style="width: {{ ($v->used_count / max(1, $v->max_uses)) * 100 }}%">
-                                                        </div>
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-3 text-gray-400 text-sm">
-                                                {{ $v->expires_at ? $v->expires_at->format('d/m/Y') : '∞' }}</td>
-                                            <td class="px-4 py-3">
-                                                <span
-                                                    class="text-xs font-black px-2 py-1 rounded-full {{ $v->isValid() ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-700 text-gray-500' }}">
-                                                    {{ $v->isValid() ? 'Hoạt động' : 'Hết hạn' }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    @empty
+                    @if (auth()->user()->hasPermission('manage_vouchers'))
+                        <div class="bg-[#1A1A1A] border-2 border-[#333] rounded-2xl overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full min-w-[600px]">
+                                    <thead class="bg-[#222] border-b border-[#333]">
                                         <tr>
-                                            <td colspan="6" class="text-center text-gray-500 py-6 text-sm">Chưa có
-                                                voucher nào</td>
+                                            @foreach (['Mã', 'Giảm giá', 'Loại', 'Đã dùng', 'Hạn sử dụng', 'Trạng thái'] as $h)
+                                                <th
+                                                    class="text-left text-gray-400 text-xs font-black px-4 py-3 uppercase tracking-wide">
+                                                    {{ $h }}</th>
+                                            @endforeach
                                         </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($vouchers ?? [] as $v)
+                                            <tr class="border-b border-[#222] hover:bg-[#1D1D1D]">
+                                                <td class="px-4 py-3 text-white font-black text-sm">{{ $v->code }}
+                                                </td>
+                                                <td class="px-4 py-3 text-[#FFD23F] font-black">
+                                                    {{ $v->type === 'flat' ? number_format($v->value) . 'đ' : ($v->type === 'percent' ? $v->value . '%' : 'Free ship') }}
+                                                </td>
+                                                <td class="px-4 py-3 text-gray-400 text-sm">
+                                                    {{ $v->type === 'flat' ? 'Cố định' : ($v->type === 'percent' ? 'Phần trăm' : 'Free ship') }}
+                                                </td>
+                                                <td class="px-4 py-3">
+                                                    <div class="text-white text-sm font-bold">
+                                                        {{ $v->used_count }}/{{ $v->max_uses ?? '∞' }}</div>
+                                                    @if ($v->max_uses)
+                                                        <div class="h-1.5 bg-[#333] rounded-full mt-1 w-20">
+                                                            <div class="h-full bg-[#FF6B35] rounded-full"
+                                                                style="width: {{ ($v->used_count / max(1, $v->max_uses)) * 100 }}%">
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                </td>
+                                                <td class="px-4 py-3 text-gray-400 text-sm">
+                                                    {{ $v->expires_at ? $v->expires_at->format('d/m/Y') : '∞' }}</td>
+                                                <td class="px-4 py-3">
+                                                    <span
+                                                        class="text-xs font-black px-2 py-1 rounded-full {{ $v->isValid() ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-gray-700 text-gray-500' }}">
+                                                        {{ $v->isValid() ? 'Hoạt động' : 'Hết hạn' }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="text-center text-gray-500 py-6 text-sm">Chưa có
+                                                    voucher nào</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     @endif
 
@@ -166,6 +175,7 @@
                                         <option value="vip">Khách VIP</option>
                                     </select>
                                 </div>
+                            </div>
                             <textarea name="body" placeholder="Nội dung thông báo..."
                                 class="w-full bg-[#222] border border-[#444] text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-[#FF6B35] h-20 resize-none"></textarea>
                             <button type="submit"
@@ -173,6 +183,7 @@
                                 Gửi ngay</button>
                         </form>
                     </div>
+                </div>
             @endif
 
             {{-- ROLES --}}
@@ -216,6 +227,7 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
                 </div>
 
                 <script>
@@ -280,15 +292,17 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6" class="text-center text-gray-500 py-6 text-sm">Chưa có
-                                                audit log nào</td>
+                                            <td colspan="6" class="text-center text-gray-500 py-6 text-sm">Chưa có log
+                                                nào</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
+                    </div>
                 </div>
             @endif
 
         </div>
+    </div>
 @endsection

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AssignShipperRequest;
 use App\Models\Delivery\Shipper;
 use App\Models\Order\Order;
-use Illuminate\Http\Request;
 
 class DispatchController extends Controller
 {
@@ -34,13 +34,8 @@ class DispatchController extends Controller
         return back();
     }
 
-    public function assign(Request $request)
+    public function assign(AssignShipperRequest $request)
     {
-        $request->validate([
-            'order_id'   => 'required|exists:orders,id',
-            'shipper_id' => 'required|exists:shippers,id',
-        ]);
-
         $order   = Order::findOrFail($request->order_id);
         $shipper = Shipper::findOrFail($request->shipper_id);
 

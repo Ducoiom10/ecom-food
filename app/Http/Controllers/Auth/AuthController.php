@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Models\User\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,13 +19,8 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $request->validate([
-            'phone'    => 'required|string',
-            'password' => 'required|string',
-        ]);
-
         $user = User::where('phone', $request->phone)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
@@ -49,15 +47,8 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $request->validate([
-            'name'     => 'required|string|max:100',
-            'phone'    => 'required|string|max:15|unique:users,phone',
-            'email'    => 'nullable|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
-        ]);
-
         $user = User::create([
             'name'     => $request->name,
             'phone'    => $request->phone,
@@ -85,9 +76,8 @@ class AuthController extends Controller
         return view('auth.forgot-password');
     }
 
-    public function sendResetLink(Request $request)
+    public function sendResetLink(ForgotPasswordRequest $request)
     {
-        $request->validate(['phone' => 'required|string']);
         return back()->with('sent', true);
     }
 }

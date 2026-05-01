@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Client\CreateGroupRoomRequest;
+use App\Http\Requests\Client\GroupOrderItemRequest;
 use App\Models\Catalog\Product;
 use App\Models\Group\GroupRoom;
 use App\Models\Group\Participant;
@@ -19,10 +21,8 @@ class GroupOrderController extends Controller
         return view('client.group-orders.index', compact('branches'));
     }
 
-    public function create(Request $request)
+    public function create(CreateGroupRoomRequest $request)
     {
-        $request->validate(['branch_id' => 'required|exists:branches,id']);
-
         $room = GroupRoom::create([
             'branch_id' => $request->branch_id,
             'room_code' => strtoupper(Str::random(6)),
@@ -54,7 +54,7 @@ class GroupOrderController extends Controller
                 'room_id'      => $room->id,
                 'user_id'      => auth()->id(),
                 'display_name' => auth()->user()->name,
-                'emoji'        => collect(['🍜','🍗','🧋','🍚','🥗','🍱'])->random(),
+                'emoji'        => collect(['🍜', '🍗', '🧋', '🍚', '🥗', '🍱'])->random(),
                 'is_host'      => false,
             ]);
         }
@@ -86,10 +86,8 @@ class GroupOrderController extends Controller
         ]);
     }
 
-    public function addItem(Request $request, string $code)
+    public function addItem(GroupOrderItemRequest $request, string $code)
     {
-        $request->validate(['product_id' => 'required|exists:products,id', 'action' => 'required|in:add,remove']);
-
         $room        = GroupRoom::where('room_code', $code)->where('is_locked', false)->firstOrFail();
         $participant = $room->participants()->where('user_id', auth()->id())->firstOrFail();
         $product     = Product::findOrFail($request->product_id);
@@ -112,7 +110,7 @@ class GroupOrderController extends Controller
 
         if ($request->action === 'add') {
             $item ? $item->increment('quantity')
-                  : $order->items()->create(['product_id' => $product->id, 'quantity' => 1, 'price' => $product->base_price]);
+                : $order->items()->create(['product_id' => $product->id, 'quantity' => 1, 'price' => $product->base_price]);
         } elseif ($request->action === 'remove' && $item) {
             $item->quantity > 1 ? $item->decrement('quantity') : $item->delete();
         }
