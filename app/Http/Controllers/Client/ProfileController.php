@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Client\UpdateProfileRequest;
+use App\Http\Requests\Client\ChangePasswordRequest;
 use App\Models\Loyalty\LoyaltyChallenge;
 use App\Models\Loyalty\UserChallengeProgress;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -33,14 +34,9 @@ class ProfileController extends Controller
         return view('client.profile.edit', ['user' => auth()->user()]);
     }
 
-    public function update(Request $request)
+    public function update(UpdateProfileRequest $request)
     {
         $user = auth()->user();
-
-        $request->validate([
-            'name'  => 'required|string|max:100',
-            'email' => 'nullable|email|unique:users,email,' . $user->id,
-        ]);
 
         $user->update($request->only('name', 'email'));
 
@@ -52,13 +48,8 @@ class ProfileController extends Controller
         return view('client.profile.change-password');
     }
 
-    public function changePassword(Request $request)
+    public function changePassword(ChangePasswordRequest $request)
     {
-        $request->validate([
-            'current_password' => 'required|string',
-            'password'         => 'required|string|min:6|confirmed',
-        ]);
-
         $user = auth()->user();
 
         if (!Hash::check($request->current_password, $user->password)) {

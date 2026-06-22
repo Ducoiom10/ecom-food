@@ -50,6 +50,7 @@ Route::prefix('')->name('client.')->group(function () {
         Route::patch('/cart/{id}',   [CartController::class, 'updateQty'])->name('cart.update');
         Route::delete('/cart/{id}',  [CartController::class, 'remove'])->name('cart.remove');
         Route::post('/cart/voucher', [CartController::class, 'applyVoucher'])->name('cart.voucher');
+        Route::get('/cart-summary',  [CartController::class, 'index'])->name('cart');
         Route::get('/checkout',      [CartController::class, 'checkout'])->name('checkout');
         Route::post('/checkout',     [CartController::class, 'placeOrder'])->name('checkout.post');
 
@@ -92,6 +93,7 @@ Route::prefix('admin')->name('admin.')
         // KDS — kitchen_staff trở lên
         Route::middleware('permission:view_kds')->group(function () {
             Route::get('/kds',                  [KdsController::class, 'index'])->name('kds');
+            Route::post('/kds/{id}/confirm',    [KdsController::class, 'confirm'])->name('kds.confirm')->middleware('permission:update_kds');
             Route::post('/kds/{id}/move',       [KdsController::class, 'move'])->name('kds.move')->middleware('permission:update_kds');
             Route::patch('/kds/inventory/{id}', [KdsController::class, 'updateInventory'])->name('kds.inventory')->middleware('permission:update_kds');
         });
@@ -112,6 +114,7 @@ Route::prefix('admin')->name('admin.')
         // Branch — branch_manager trở lên
         Route::middleware('permission:view_branch')->group(function () {
             Route::get('/branch',               [BranchController::class, 'index'])->name('branch');
+            Route::post('/branch/confirm/{id}', [BranchController::class, 'confirmOrder'])->name('branch.confirm')->middleware('permission:update_orders');
             Route::patch('/branch/refund/{id}', [BranchController::class, 'refund'])->name('branch.refund')->middleware('permission:refund_orders');
         });
 

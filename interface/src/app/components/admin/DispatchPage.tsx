@@ -1,6 +1,32 @@
-import { useState, useEffect } from "react";
-import { MapPin, Package, Clock, Truck, CheckCircle, AlertCircle, RefreshCw, Navigation, Phone, Users } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { MapPin, Package, Clock, Truck, CheckCircle, RefreshCw, Phone, Users } from "lucide-react";
 import { DISPATCH_ORDERS } from "../../data/mockData";
+import { calculateDistance } from "../../utils/distance";
+
+interface DispatchOrder {
+  id: string;
+  customer: string;
+  address: string;
+  items: number;
+  total: number;
+  status: string;
+  shipper: string | null;
+  shipperPhone: string | null;
+  eta: string;
+  lat: number;
+  lng: number;
+}
+
+interface Shipper {
+  id: string;
+  name: string;
+  avatar: string;
+  status: string;
+  orders: number;
+  lat: number;
+  lng: number;
+  phone: string;
+}
 
 const STATUS_CONFIG = {
   ready: { label: "Chờ giao", color: "bg-yellow-500 text-black", dot: "bg-yellow-500" },
@@ -9,31 +35,35 @@ const STATUS_CONFIG = {
   delivered: { label: "Đã giao", color: "bg-green-500 text-white", dot: "bg-green-500" },
 };
 
+// Shipper locations (lat, lng) — tọa độ gần chi nhánh Q1
 const SHIPPERS = [
-  { id: "s1", name: "Trần Văn B", avatar: "B", status: "busy", orders: 1, distance: "1.2km", phone: "0901234567" },
-  { id: "s2", name: "Phạm Văn C", avatar: "C", status: "busy", orders: 1, distance: "0.8km", phone: "0912345678" },
-  { id: "s3", name: "Nguyễn Văn D", avatar: "D", status: "busy", orders: 1, distance: "2.1km", phone: "0923456789" },
-  { id: "s4", name: "Lê Văn E", avatar: "E", status: "busy", orders: 1, distance: "1.5km", phone: "0934567890" },
-  { id: "s5", name: "Hoàng Văn F", avatar: "F", status: "free", orders: 0, distance: "0.5km", phone: "0945678901" },
+  { id: "s1", name: "Trần Văn B", avatar: "B", status: "busy", orders: 1, lat: 10.778, lng: 106.703, phone: "0901234567" },
+  { id: "s2", name: "Phạm Văn C", avatar: "C", status: "busy", orders: 1, lat: 10.774, lng: 106.699, phone: "0912345678" },
+  { id: "s3", name: "Nguyễn Văn D", avatar: "D", status: "busy", orders: 1, lat: 10.782, lng: 106.696, phone: "0923456789" },
+  { id: "s4", name: "Lê Văn E", avatar: "E", status: "busy", orders: 1, lat: 10.771, lng: 106.694, phone: "0934567890" },
+  { id: "s5", name: "Hoàng Văn F", avatar: "F", status: "free", orders: 0, lat: 10.776, lng: 106.700, phone: "0945678901" },
 ];
 
+// Tọa độ chi nhánh (nhà hàng)
+const RESTAURANT_LAT = 10.776;
+const RESTAURANT_LNG = 106.701;
+
 export function DispatchPage() {
-  const [orders, setOrders] = useState(DISPATCH_ORDERS);
+  const [orders, setOrders] = useState<DispatchOrder[]>(DISPATCH_ORDERS as DispatchOrder[]);
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
-  const [selectedShipper, setSelectedShipper] = useState<string | null>(null);
   const [assignModal, setAssignModal] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
 
   // Simulate live updates
   useEffect(() => {
-    const interval = setInterval(() => setTick((t) => t + 1), 10000);
+    const interval = setInterval(() => setTick((t: number) => t + 1), 10000);
     return () => clearInterval(interval);
   }, []);
 
   const assignShipper = (orderId: string, shipperId: string) => {
     const shipper = SHIPPERS.find((s) => s.id === shipperId);
-    setOrders((prev) =>
-      prev.map((o) =>
+    setOrders((prev: typeof DISPATCH_ORDERS) =>
+      prev.map((o: (typeof DISPATCH_ORDERS)[0]) =>
         o.id === orderId ? { ...o, status: "picking", shipper: shipper?.name || null } : o
       )
     );
@@ -41,17 +71,66 @@ export function DispatchPage() {
   };
 
   const updateStatus = (orderId: string) => {
-    setOrders((prev) =>
-      prev.map((o) => {
+    setOrders((prev: typeof DISPATCH_ORDERS) =>
+      prev.map((o: (typeof DISPATCH_ORDERS)[0]) => {
         if (o.id !== orderId) return o;
-        const next: Record<string, any> = { ready: "picking", picking: "delivering", delivering: "delivered" };
+        const next: Record<string, string> = { ready: "picking", picking: "delivering", delivering: "delivered" };
         return { ...o, status: next[o.status] || o.status };
       })
     );
   };
 
+  // Tính khoảng cách shipper đến đơn hàng
+  const shipperDistances = useMemo(() => {
+    const distMap: Record<string, string> = {};
+    SHIPPERS.forEach((shipper: Shipper) => {
+      orders.forEach((order: DispatchOrder) => {
+        if (order.lat && order.lng) {
+          const d = calculateDistance(shipper.lat, shipper.lng, order.lat, order.lng);
+          distMap[`${shipper.id}-${order.id}`] = `${d.toFixed(1)}km`;
+        }
+      });
+    });
+    return distMap;
+  }, [orders, tick]);
+
+  // Khoảng cách từ nhà hàng đến đơn hàng (để tính ETA)
+  const orderDistances = useMemo(() => {
+    const distMap: Record<string, number> = {};
+    orders.forEach((order: DispatchOrder) => {
+      if (order.lat && order.lng) {
+        distMap[order.id] = calculateDistance(RESTAURANT_LAT, RESTAURANT_LNG, order.lat, order.lng);
+      }
+    });
+    return distMap;
+  }, [orders]);
+
+  // Tính ETA dựa trên khoảng cách: 5 phút chuẩn bị + 3 phút/km
+  const getEta = (orderId: string) => {
+    const dist = orderDistances[orderId];
+    if (!dist) return "—";
+    const minutes = Math.ceil(5 + dist * 3);
+    return `${minutes} phút`;
+  };
+
   // Group orders that share same route/building
-  const batchableOrders = orders.filter((o) => o.status === "ready" || o.status === "picking");
+  const batchableOrders = orders.filter((o: DispatchOrder) => o.status === "ready" || o.status === "picking");
+
+  // Tìm shipper gần nhất cho đơn hàng
+  const getNearestShipper = (orderId: string): (Shipper & { distanceKm: number }) | null => {
+    const order = orders.find((o: DispatchOrder) => o.id === orderId);
+    if (!order || !order.lat || !order.lng) return null;
+    let nearest: (Shipper & { distanceKm: number }) | null = null;
+    let minDist = Infinity;
+    SHIPPERS.filter((s: Shipper) => s.status === "free").forEach((s: Shipper) => {
+      const d = calculateDistance(s.lat, s.lng, order.lat, order.lng);
+      if (d < minDist) {
+        minDist = d;
+        nearest = { ...s, distanceKm: d };
+      }
+    });
+    return nearest;
+  };
 
   return (
     <div className="h-full flex gap-0 overflow-hidden bg-[#0F0F0F]">
@@ -151,6 +230,8 @@ export function DispatchPage() {
         <div className="flex-1 overflow-y-auto">
           {orders.map((order) => {
             const cfg = STATUS_CONFIG[order.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.ready;
+            const eta = getEta(order.id);
+            const dist = orderDistances[order.id];
             return (
               <div
                 key={order.id}
@@ -170,6 +251,9 @@ export function DispatchPage() {
                     <div className="flex items-center gap-1 text-gray-500 text-[10px] mt-0.5">
                       <MapPin size={10} />
                       <span className="truncate">{order.address}</span>
+                      {dist !== undefined && (
+                        <span className="text-[#FFD23F] font-bold ml-1">· {dist.toFixed(1)}km</span>
+                      )}
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center gap-1 text-gray-400 text-xs">
@@ -178,7 +262,7 @@ export function DispatchPage() {
                       </div>
                       <div className="flex items-center gap-1 text-gray-400 text-xs">
                         <Clock size={10} />
-                        <span>ETA: {order.eta}</span>
+                        <span>ETA: {eta}</span>
                       </div>
                     </div>
                   </div>
@@ -187,22 +271,43 @@ export function DispatchPage() {
                 {/* Expanded actions */}
                 {selectedOrder === order.id && (
                   <div className="mt-3 pt-3 border-t border-[#333] space-y-2">
-                    <div className="flex gap-2">
-                      {!order.shipper && (
+                    {/* Gợi ý shipper gần nhất */}
+                    {!order.shipper && (
+                      <>
+                        {(() => {
+                          const nearest = getNearestShipper(order.id);
+                          return nearest ? (
+                            <div className="bg-green-900/20 border border-green-700/30 rounded-xl px-3 py-2 text-xs">
+                              <span className="text-green-400 font-bold">💡 Gợi ý:</span>{" "}
+                              <span className="text-gray-300">{nearest.name} đang rảnh, cách đơn </span>
+                              <span className="text-green-400 font-black">{nearest.distanceKm?.toFixed(1)}km</span>
+                            </div>
+                          ) : (
+                            <div className="bg-gray-800/50 border border-gray-700/30 rounded-xl px-3 py-2 text-xs text-gray-500">
+                              Không có shipper rảnh gần đơn này
+                            </div>
+                          );
+                        })()}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setAssignModal(order.id); }}
+                            className="flex-1 text-xs font-bold bg-[#FFD23F] text-[#1C1C1C] py-2 rounded-xl border border-[#444] flex items-center justify-center gap-1"
+                          >
+                            <Truck size={12} /> Phân shipper
+                          </button>
+                        </div>
+                      </>
+                    )}
+                    {order.shipper && (
+                      <div className="flex gap-2">
                         <button
-                          onClick={(e) => { e.stopPropagation(); setAssignModal(order.id); }}
-                          className="flex-1 text-xs font-bold bg-[#FFD23F] text-[#1C1C1C] py-2 rounded-xl border border-[#444] flex items-center justify-center gap-1"
+                          onClick={(e) => { e.stopPropagation(); updateStatus(order.id); }}
+                          className="flex-1 text-xs font-bold bg-[#FF6B35] text-white py-2 rounded-xl border border-[#FF6B35] flex items-center justify-center gap-1"
                         >
-                          <Truck size={12} /> Phân shipper
+                          <CheckCircle size={12} /> Cập nhật
                         </button>
-                      )}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); updateStatus(order.id); }}
-                        className="flex-1 text-xs font-bold bg-[#FF6B35] text-white py-2 rounded-xl border border-[#FF6B35] flex items-center justify-center gap-1"
-                      >
-                        <CheckCircle size={12} /> Cập nhật
-                      </button>
-                    </div>
+                      </div>
+                    )}
                     {order.shipper && (
                       <a href={`tel:${order.shipperPhone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300">
                         <Phone size={12} /> Gọi {order.shipper}: {order.shipperPhone}
@@ -222,22 +327,27 @@ export function DispatchPage() {
           <div className="bg-[#1A1A1A] border-2 border-[#333] rounded-2xl p-5 w-80 shadow-2xl">
             <h3 className="text-white font-black text-lg mb-4">Phân công Shipper</h3>
             <div className="space-y-2 mb-4">
-              {SHIPPERS.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => assignShipper(assignModal, s.id)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${s.status === "free" ? "border-green-500/50 hover:border-green-500 hover:bg-green-900/20" : "border-[#333] opacity-60"}`}
-                >
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-white ${s.status === "free" ? "bg-green-500" : "bg-gray-600"}`}>
-                    {s.avatar}
-                  </div>
-                  <div className="text-left flex-1">
-                    <div className="text-white text-sm font-bold">{s.name}</div>
-                    <div className="text-gray-400 text-xs">{s.status === "free" ? `Rảnh · ${s.distance}` : `Đang giao ${s.orders} đơn`}</div>
-                  </div>
-                  {s.status === "free" && <span className="text-green-400 text-xs font-bold">Chọn</span>}
-                </button>
-              ))}
+              {SHIPPERS.map((s) => {
+                const distToOrder = shipperDistances[`${s.id}-${assignModal}`] || "—";
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => assignShipper(assignModal, s.id)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${s.status === "free" ? "border-green-500/50 hover:border-green-500 hover:bg-green-900/20" : "border-[#333] opacity-60"}`}
+                  >
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-white ${s.status === "free" ? "bg-green-500" : "bg-gray-600"}`}>
+                      {s.avatar}
+                    </div>
+                    <div className="text-left flex-1">
+                      <div className="text-white text-sm font-bold">{s.name}</div>
+                      <div className="text-gray-400 text-xs">
+                        {s.status === "free" ? `Rảnh · Cách đơn: ${distToOrder}` : `Đang giao ${s.orders} đơn`}
+                      </div>
+                    </div>
+                    {s.status === "free" && <span className="text-green-400 text-xs font-bold">Chọn</span>}
+                  </button>
+                );
+              })}
             </div>
             <button onClick={() => setAssignModal(null)} className="w-full text-gray-400 text-sm hover:text-white">Huỷ</button>
           </div>
@@ -246,3 +356,4 @@ export function DispatchPage() {
     </div>
   );
 }
+

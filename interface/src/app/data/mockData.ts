@@ -1,6 +1,22 @@
 // ===== MOCK DATA FOR BA ANH EM F&B ECOSYSTEM =====
 
-export const MENU_ITEMS = [
+export interface MenuItem {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  image: string;
+  rating: number;
+  sold: number;
+  description: string;
+  calories: number;
+  isNew: boolean;
+  isBestSeller: boolean;
+  toppings: { id: string; name: string; price: number }[];
+  sizes: { id: string; name: string; price: number }[];
+}
+
+export const MENU_ITEMS: MenuItem[] = [
   {
     id: "1",
     name: "Mì trộn đặc biệt",
@@ -9,7 +25,6 @@ export const MENU_ITEMS = [
     image: "https://images.unsplash.com/photo-1658706117692-f80a370adde3?w=400&q=80",
     rating: 4.8,
     sold: 523,
-    distance: "0.8km",
     description: "Mì trộn với sốt đặc biệt của nhà, topping trứng lòng đào, thịt bò slice",
     calories: 420,
     isNew: false,
@@ -34,7 +49,6 @@ export const MENU_ITEMS = [
     image: "https://images.unsplash.com/photo-1572932759882-bb34c848d1b3?w=400&q=80",
     rating: 4.9,
     sold: 1200,
-    distance: "0.8km",
     description: "Trà sữa pha chế theo công thức độc quyền, trân châu đen dai giòn",
     calories: 280,
     isNew: false,
@@ -58,7 +72,6 @@ export const MENU_ITEMS = [
     image: "https://images.unsplash.com/photo-1599719455360-ff0be7c4dd06?w=400&q=80",
     rating: 4.7,
     sold: 890,
-    distance: "0.8km",
     description: "Bánh mì giòn với nhân pate, chả lụa, dưa leo tươi và rau mùi",
     calories: 380,
     isNew: true,
@@ -81,7 +94,6 @@ export const MENU_ITEMS = [
     image: "https://images.unsplash.com/photo-1765360024320-b2ab819c6f75?w=400&q=80",
     rating: 4.6,
     sold: 445,
-    distance: "0.8km",
     description: "Gà rán tẩm ướp cay đặc biệt, giòn ngoài mềm trong",
     calories: 560,
     isNew: true,
@@ -104,7 +116,6 @@ export const MENU_ITEMS = [
     image: "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?w=400&q=80",
     rating: 4.7,
     sold: 320,
-    distance: "0.8km",
     description: "Sinh tố xoài Cát Hòa Lộc tươi, không pha thêm nước",
     calories: 210,
     isNew: false,
@@ -126,7 +137,6 @@ export const MENU_ITEMS = [
     image: "https://images.unsplash.com/photo-1677011454858-8ecb6d4e6ce0?w=400&q=80",
     rating: 4.9,
     sold: 678,
-    distance: "0.8km",
     description: "Phở bò nấu 12 tiếng với xương ống, thịt bò tái chín đặc biệt",
     calories: 480,
     isNew: false,
@@ -150,7 +160,6 @@ export const MENU_ITEMS = [
     image: "https://images.unsplash.com/photo-1588703314135-01e9e4205802?w=400&q=80",
     rating: 4.8,
     sold: 412,
-    distance: "0.8km",
     description: "Cơm tấm sườn nướng mật ong, bì sợi và chả trứng truyền thống",
     calories: 620,
     isNew: false,
@@ -173,7 +182,6 @@ export const MENU_ITEMS = [
     image: "https://images.unsplash.com/photo-1776178393305-be4c1097fae5?w=400&q=80",
     rating: 4.5,
     sold: 289,
-    distance: "0.8km",
     description: "Chả giò chiên giòn nhân tôm thịt, rau củ tươi ngon",
     calories: 320,
     isNew: false,
@@ -266,10 +274,10 @@ export const DISPATCH_ORDERS = [
 ];
 
 export const BRANCHES = [
-  { id: "b1", name: "Chi nhánh Quận 1", address: "123 Nguyễn Huệ, Q1", status: "open", revenue: 15600000, orders: 234, rating: 4.8 },
-  { id: "b2", name: "Chi nhánh Quận 3", address: "45 Võ Văn Tần, Q3", status: "open", revenue: 12300000, orders: 189, rating: 4.7 },
-  { id: "b3", name: "Chi nhánh Bình Thạnh", address: "78 Nơ Trang Long, BT", status: "open", revenue: 9800000, orders: 156, rating: 4.6 },
-  { id: "b4", name: "Chi nhánh Gò Vấp", address: "34 Quang Trung, GV", status: "closed", revenue: 0, orders: 0, rating: 4.5 },
+  { id: "b1", name: "Chi nhánh Quận 1", address: "123 Nguyễn Huệ, Q1", status: "open", revenue: 15600000, orders: 234, rating: 4.8, lat: 10.776, lng: 106.701 },
+  { id: "b2", name: "Chi nhánh Quận 3", address: "45 Võ Văn Tần, Q3", status: "open", revenue: 12300000, orders: 189, rating: 4.7, lat: 10.78, lng: 106.688 },
+  { id: "b3", name: "Chi nhánh Bình Thạnh", address: "78 Nơ Trang Long, BT", status: "open", revenue: 9800000, orders: 156, rating: 4.6, lat: 10.803, lng: 106.71 },
+  { id: "b4", name: "Chi nhánh Gò Vấp", address: "34 Quang Trung, GV", status: "closed", revenue: 0, orders: 0, rating: 4.5, lat: 10.835, lng: 106.665 },
 ];
 
 export const INVENTORY_ITEMS = [

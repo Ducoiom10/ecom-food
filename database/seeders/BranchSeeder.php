@@ -9,12 +9,14 @@ class BranchSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach ([
-            ['name' => 'Chi nhánh Quận 1',     'address' => '123 Nguyễn Huệ, Q.1, TP.HCM',         'lat' => 10.7769, 'lng' => 106.7009],
-            ['name' => 'Chi nhánh Quận 3',     'address' => '45 Võ Văn Tần, Q.3, TP.HCM',          'lat' => 10.7756, 'lng' => 106.6917],
-            ['name' => 'Chi nhánh Bình Thạnh', 'address' => '88 Đinh Bộ Lĩnh, Bình Thạnh, TP.HCM', 'lat' => 10.8031, 'lng' => 106.7143],
-        ] as $b) {
-            Branch::create(array_merge($b, ['status' => 'open']));
+        foreach (
+            [
+                ['name' => 'Chi nhánh Hoàn Kiếm', 'address' => '123 Đinh Tiên Hoàng, Hoàn Kiếm, Hà Nội',  'lat' => 21.0285, 'lng' => 105.8542],
+                ['name' => 'Chi nhánh Đống Đa',    'address' => '45 Chùa Bộc, Đống Đa, Hà Nội',          'lat' => 21.0245, 'lng' => 105.8412],
+                ['name' => 'Chi nhánh Cầu Giấy',   'address' => '88 Xuân Thủy, Cầu Giấy, Hà Nội',        'lat' => 21.0358, 'lng' => 105.7938],
+            ] as $b
+        ) {
+            Branch::create(array_merge($b, ['status' => 'open', 'is_active' => true]));
         }
     }
 }

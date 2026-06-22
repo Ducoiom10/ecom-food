@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Client\TrackOrderRequest;
 use App\Models\Order\Order;
-use Illuminate\Http\Request;
 
 class OrderTrackingController extends Controller
 {
@@ -19,13 +19,8 @@ class OrderTrackingController extends Controller
     /**
      * Xử lý tra cứu đơn hàng bằng order_number + phone.
      */
-    public function track(Request $request)
+    public function track(TrackOrderRequest $request)
     {
-        $request->validate([
-            'order_number' => 'required|string',
-            'phone'        => 'required|string',
-        ]);
-
         $order = Order::with('items.product', 'branch', 'shipper', 'voucher')
             ->where('order_number', $request->order_number)
             ->whereHas('user', fn($q) => $q->where('phone', $request->phone))
@@ -38,4 +33,3 @@ class OrderTrackingController extends Controller
         return view('client.order-tracking', compact('order'));
     }
 }
-
